@@ -1,6 +1,6 @@
-####  replication Initiation zone calling
+####  Replication initiation zone calling
 ####  OK-Seq
-####  2019-09
+####  2020-01-21
 ####  lab Chen
 #################################################################################################################
 #  
@@ -12,7 +12,7 @@ quant <- c(-1, -0.0082058939609862, -0.00141890249101162, 0.00103088286465956, 0
 #     Initialize HMM 4 states, observations, start probability, emission probability, transition probability 
 #============================================================================================================
 
-hmmPolarity_v2 <- function(fileW, fileC, fileOut, binSize=1000, chrom, thresh=30, winS=15,hwinS=winS/2,
+hmmPolarity <- function(fileW, fileC, fileOut, binSize=1000, chrom, thresh=30, winS=15,hwinS=winS/2,
                            st=c("D", "L", "H", "U"),
                            sym=c("V", "W", "X", "Y", "Z"),
                            pstart=rep(1/4, 4),
