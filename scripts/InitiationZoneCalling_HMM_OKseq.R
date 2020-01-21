@@ -1,4 +1,4 @@
-####  Replication initiation zone calling
+####  Replication initiation and termination zone calling
 ####  OK-Seq
 ####  2020-01-21
 ####  lab Chen
