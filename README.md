@@ -40,11 +40,11 @@ Segmentation of RFD profiles:
 
 A four-state HMM was used to detect within the RFD profiles the AS, DS and FS segments representing regions of predominant initiation (‘Up’ state), predominant termination (‘Down’ state) and constant RFD (‘Flat1’ and ‘Flat2’ states; see Fig.1 for a graphic representation). 
 
-![Fig.1 state model used in the HMM segmentation; Up, regions of predominant initiation, i.e. AS; Down, regions of predominant termination, i.e. DS; Flat1 and Flat2, FS. ](https://github.com/CL-CHEN-Lab/OK-Seq/blob/master/img/fig1.png) 
+![	Fig.1 state model used in the HMM segmentation; Up, regions of predominant initiation, i.e. AS; Down, regions of predominant termination, i.e. DS; Flat1 and Flat2, FS. ](https://github.com/CL-CHEN-Lab/OK-Seq/blob/master/img/fig1.png) 
 
 The RFD values were computed within 15 kb sliding windows (stepped by 1 kb across the autosomes). The HMM used the Delta RFD values between adjacent windows (that is, Delta RFDn = (RFD(n+1)  - RFD(n))/2 for window n). Windows with <30 reads on one strand were masked. The Delta RFD values were divided into five quantiles and the HMM package of R (http://www.r-project.org/) was used to perform the HMM prediction with probabilities of transition and emission indicated in the Fig. 2. 
 
-![Fig.2 emission (left table) and transition (right table) probabilities used in the HMM segmentation. ](https://github.com/CL-CHEN-Lab/OK-Seq/blob/master/img/fig2.png) 
+!["Fig.2 emission (left table) and transition (right table) probabilities used in the HMM segmentation." ](https://github.com/CL-CHEN-Lab/OK-Seq/blob/master/img/fig2.png) 
 
 Only segments reproducibly identified in both biological replicates were retained. The choice of a 15 kb sliding window is based on a compromise between spatial resolution and reproducibility of AS detection among biological replicates. The efficiency of AS was estimated as:
 
