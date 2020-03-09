@@ -7,7 +7,7 @@ Title: Generate the replication fork direcrionality genome-wide and initiation z
 
 Version: 0.1.0
 
-Author: Yves d'AUBENTON-CARAFA <yves@daubenton.net>
+Author: Yves d'AUBENTON-CARAFA <yves@daubenton.net>, Chun-long CHEN <chunlong.chen@curie.fr>
 
 Maintainer: Yaqun LIU <yaqun.liu@curie.fr>
 
