@@ -63,6 +63,39 @@ The final RFD profile and the relication origin/ termination zones calling are l
 
 ![    Fig.1 Red (blue) lines above (below) HeLa RFD profile indicate ascending (descending) HMM-detected segments (see Methods section); magenta and cyan arrows indicate genes. ](https://github.com/CL-CHEN-Lab/OK-Seq/blob/master/img/fig3.png) 
 
+## R package hmmPolarity function usage: 
+
+Please make sure that you already install and import the associated R package HMM before.
+
+# For the input:
+
+Please preprare two .bedgraph files (The format is by defaut as 4 columns : chr, start, end and counts) for each strand (watson and crick) of OK-Seq data. And OK-seq data needs to be calculated into 1kb adjacent binsize, which can be easily got by using some bio-informatic tools like deeptools.
+
+Then just easily enter the pathways linking to your 2 bedgraph files and also define the prefix of the output files:
+
+(e.g. hmmPolarity(fileW= ".../my_watson_1kb_okseq.bedgraph", fileC=".../my_crick_1kb_okseq.bedgraph", fileOut=".../my_hmm_OK_result"))
+
+By default, this R function takes the threshold as 30 to remove the abnormal counts for each strand and then smooths the data into 15kb windoz size to get the best RFD profile and the corresponding HMM calling results.
+
+# For the output:
+
+You will obtain 8 output files which are:
+
+1, RFD file ("_RFD.wig") in wiggle format that allows you to visualize directly the replication fork direction profile in some integrative genomic viewers or browsers like IGV/IGB.
+
+2,log file ("_log.txt") that records all of the parameters you use and also the default setting information.
+
+3, text file ("_HMM.txt") that records all of the global optimal hidden states calculated by HMM Viterbi algorithm.
+
+4,text file ("_HMMpropa.txt") that records all of the previous state positions that caused the maximum local probability of a state by HMM posterior algorithm.
+
+5-8, generate 4 text files that records the genomic positions and also the other corresponding possibilities for the final identified optimal states:
+
+"_HMMsegments_IZ.txt" is for the replication initiation zone calling result.
+
+"_HMMsegments_TZ.txt" is for the replication termination zone calling result.
+
+"_HMMsegments_highFlatZone.txt" and "_HMMsegments_LowFlatZone.txt" are for the two replication intermediate zones calling results.
 
 ## Reference:
 
