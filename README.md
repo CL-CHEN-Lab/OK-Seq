@@ -67,7 +67,7 @@ The final RFD profile and the relication origin/ termination zones calling are l
 
 Please make sure that you already install and import the associated R package HMM before.
 
-# For the input:
+### For the input:
 
 Please preprare two .bedgraph files (The format is by defaut as 4 columns : chr, start, end and counts) for each strand (watson and crick) of OK-Seq data. And OK-seq data needs to be calculated into 1kb adjacent binsize, which can be easily got by using some bio-informatic tools like deeptools.
 
@@ -77,7 +77,7 @@ Then just easily enter the pathways linking to your 2 bedgraph files and also de
 
 By default, this R function takes the threshold as 30 to remove the abnormal counts for each strand and then smooths the data into 15kb windoz size to get the best RFD profile and the corresponding HMM calling results.
 
-# For the output:
+### For the output:
 
 You will obtain 8 output files which are:
 
