@@ -35,10 +35,10 @@ hmmPolarity <- function(fileW, fileC, fileOut, binSize=1000, thresh=30, winS=15,
   for (i in c(1:length(chrom))){
     print(chrom[i])
     chr.name <- chrom[i]
-    # 1kb bs of Watson strand
+    # 1kb binsize of Watson strand
     w <- ta_w[ta_w$V1 == chrom[i],4]
 
-    # 1kb bs of Crick strand
+    # 1kb binsize of Crick strand
     c <- ta_c[ta_c$V1 == chrom[i],4]
 
     # raw polarity for later
@@ -64,7 +64,8 @@ hmmPolarity <- function(fileW, fileC, fileOut, binSize=1000, thresh=30, winS=15,
     sc <- cumsum(c)
     lg <- length(c)
     cs <- apply(win ,1, function(x) { (sc[x[2]]-sc[x[1]])/winS } )
-
+    
+    # calculate the RFD profile
     thresh = thresh/winS
     print(paste("cutoff is :",thresh))
     rfd <- (cs-ws)/(ws+cs)
@@ -85,7 +86,7 @@ hmmPolarity <- function(fileW, fileC, fileOut, binSize=1000, thresh=30, winS=15,
     delta <- c(0,bias[-1]-bias[-length(bias)])
     delta[is.na(delta)] <- 0.5
 
-    # affect symbols
+    # calculate the five quantiles for later HMM calculation if the they weren't given by the user.
     if (is.na(quant[1])) { quant <- quantile(delta, probs = seq(0, 1, 0.20)) }
     quant[1] <- -1
     quant[length(quant)] <- 1
@@ -136,7 +137,7 @@ hmmPolarity <- function(fileW, fileC, fileOut, binSize=1000, thresh=30, winS=15,
     print("wait, viterbi...")
     seg <- viterbi(hmm=hmm1, observation=dx)
 
-    # pour affichage du profil des etats
+    # we numerate 4 states for easily showing the state profiles ================================
     prof <- rep(NA, times=length(seg))
     prof[seg=="U"] <- 1
     prof[seg=="H"] <- 0.2
@@ -148,7 +149,7 @@ hmmPolarity <- function(fileW, fileC, fileOut, binSize=1000, thresh=30, winS=15,
 
     write.table(prof, file = paste(fileOut,"_HMM.txt", sep=""), append = T, quote = FALSE, sep = "\t", col.names=F, row.names=F)
 
-    # adding the probability curve =========================
+    # adding the probability curve, record the local optimal state change position =========================
     print("wait, probabilities…")
     post <- posterior(hmm1,dx)
     prb <- rep(NA, length(seg))
@@ -242,7 +243,7 @@ hmmPolarity <- function(fileW, fileC, fileOut, binSize=1000, thresh=30, winS=15,
     slope_adj <- round(10^6*(polR-polL)/(to1-from1))
 
 
-    # writing =============================
+    # writing output =============================
     dataOut <- data.frame(chr, from=as.integer(from1), to=as.integer(to1), state=states, length=lg1, slope=inc1,
                           p, fcp=cpp, pol_mean=meanPol1, pol_left=ymin1, pol_right=ymax1,
                           na=napc, cor=corr1, slope_adj=slope_adj, pol_adj_left=polL, pol_adj_right=polR)
