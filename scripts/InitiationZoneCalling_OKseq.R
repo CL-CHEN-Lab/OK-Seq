@@ -1,16 +1,16 @@
-#' A hmmPolarity Function
+#' A bam2hmm Function
 #'
 #' This function allows you to identify most of the replication initiation/termination zones and also the intermediate states which RFD profiles are noramelly flat.
 #' @keywords OK-Seq, RFD, peak calling, HMM
 #' @export
 #' @examples
-#' hmmPolarity()
+#' bam2hmm()
 
 
 #     Initialize HMM 4 states, observations, start probability, emission probability, transition probability
 #============================================================================================================
 
-hmmPolarity <- function(fileW, fileC, fileOut, binSize=1000, thresh=30, winS=15,hwinS=winS/2,
+bam2hmm <- function(bamfile,chrsizes,fileOut, binSize=1000, thresh=30, winS=15,hwinS=winS/2,
                         st=c("D", "L", "H", "U"),
                         sym=c("V", "W", "X", "Y", "Z"),
                         pstart=rep(1/4, 4),
@@ -29,100 +29,178 @@ hmmPolarity <- function(fileW, fileC, fileOut, binSize=1000, thresh=30, winS=15,
 {
 
   require(HMM)
-  ta_w <- read.table(file=fileW, sep="\t", header=F, as.is=T)
-  ta_c <- read.table(file=fileC, sep="\t", header=F, as.is=T)
-  chrom <- unique(ta_w$V1)
-  for (i in c(1:length(chrom))){
-    print(chrom[i])
-    chr.name <- chrom[i]
-    # 1kb binsize of Watson strand
-    w <- ta_w[ta_w$V1 == chrom[i],4]
+  require(Rsamtools)
+  require(GenomicAlignments)
 
-    # 1kb binsize of Crick strand
-    c <- ta_c[ta_c$V1 == chrom[i],4]
+  readBAM<- readGAlignments(bamfile)
+  chrom <- as.character(na.omit(unique(seqnames(readBAM))))
+  print(chrom)
+  paired <- testPairedEndBam(bamfile)
+  # test if the BAM file is pair-end or not
 
-    # raw polarity for later
-    polar <- c/(c+w)
-    polar[c<thresh & w<thresh] <- NA
+  if (paired)
+  {
+    #Generate forward and reverse strand bam files:
+    print("This bam is pair-end.")
+    print("Seperating the forward strand bam.")
+    # include reads that are 2nd in a pair (128);
+    # exclude reads that are mapped to the reverse strand (16)
+    system(paste0("samtools view -b -f 128 -F 16 ",bamfile," > a.fwd1.bam"))
 
-    # smoothing into 15kb binsize
-    print(paste("window size :", winS))
-    sw <- cumsum(w)
-    lg <- length(w)
-    from <- (-hwinS+2):(lg-hwinS+1)
-    to <- from+winS-1
-    from[from<1] <- 1
-    to[to>lg] <- lg
+    # exclude reads that are mapped to the reverse strand (16) and
+    # first in a pair (64): 64 + 16 = 80
+    system(paste0("samtools view -b -f 80 ",bamfile," > a.fwd2.bam"))
 
-    print("")
-    print(paste("number of bins :", length(w)))
-    print("")
+    # combine the temporary files
+    system(paste0("samtools merge -f fwd.bam a.fwd1.bam a.fwd2.bam"))
+    system(paste0("samtools index fwd.bam"))
 
-    win <- matrix(c(from, to), ncol=2)
-    ws <- apply(win ,1, function(x) { (sw[x[2]]-sw[x[1]])/winS } )
-
-    sc <- cumsum(c)
-    lg <- length(c)
-    cs <- apply(win ,1, function(x) { (sc[x[2]]-sc[x[1]])/winS } )
+    # remove the temporary files
+    system(paste0("rm a.fwd*.bam"))
     
-    # calculate the RFD profile
-    thresh = thresh/winS
-    print(paste("cutoff is :",thresh))
-    rfd <- (cs-ws)/(ws+cs)
-    rfd[is.na(rfd)] <- 0
-    rfd[ws<thresh & cs<thresh] <- 0
-    rfd[rfd > 1] <- 1
-    rfd[rfd < -1] <- -1
-    write.table(paste0("fixedStep chrom=",chrom[i]," start=1 step=1000 span=",winS,"000"),file = paste(fileOut,"_RFD.wig", sep=""), append = T, quote = FALSE, sep = "\t", col.names=F, row.names=F)
-    write.table(rfd, file = paste(fileOut,"_RFD.wig", sep=""), append = T, quote = FALSE, sep = "\t", col.names=F, row.names=F)
+    print("Seperating the reverse strand bam.")
+    # include reads that map to the reverse strand (128)
+    # and are second in a pair (16): 128 + 16 = 144
+    system(paste0("samtools view -b -f 144 ",bamfile," > a.rev1.bam"))
 
-    # HMM from new deltas =============================
+    # include reads that are first in a pair (64), but
+    # exclude those ones that map to the reverse strand (16)
+    system(paste0("samtools view -b -f 64 -F 16 ",bamfile," > a.rev2.bam"))
 
-    # derive
-    bias <- cs/(ws+cs)
-    bias[is.na(bias)] <- 0.5
-    bias[ws<thresh & cs<thresh] <- 0.5
+    # merge the temporary files
+    system(paste0("samtools merge -f rev.bam a.rev1.bam a.rev2.bam"))
 
-    delta <- c(0,bias[-1]-bias[-length(bias)])
-    delta[is.na(delta)] <- 0.5
+    # index the merged, filtered BAM file
+    system(paste0("samtools index rev.bam"))
+    # remove temporary files
+    system(paste0("rm a.rev*.bam"))
+  }
+  else
+  {
+    print("This bam is single-end.")
+    print("Seperating the forward strand bam.")
+    # Forward strand.
+    system(paste0("samtools view -bh -F 20 ",bamfile," > fwd.bam"))
+    system(paste0("samtools index fwd.bam"))
+    print("Seperating the reverse strand bam.")
+    # Reverse strand
+    system(paste0("samtools view -bh -f 16 ",bamfile," > rev.bam"))
+    system(paste0("samtools index rev.bam"))
 
-    # calculate the five quantiles for later HMM calculation if the they weren't given by the user.
-    if (is.na(quant[1])) { quant <- quantile(delta, probs = seq(0, 1, 0.20)) }
-    quant[1] <- -1
-    quant[length(quant)] <- 1
+  }
 
-    print("quantile borders :")
-    print(quant)
-    print("")
-    dx  <- unlist(sapply(delta, function(x) { ix <- which(x>=quant); ix[length(ix)] }))
-    dx[dx>5] <- 5
+  chromNames <-  read.table(chrsizes,header=FALSE,sep="\t",comment.char = "#",stringsAsFactors = FALSE)
+  chr.sizes <- data.frame(chr=chromNames[,1],size=chromNames[,2])
+
+  for (i in c(1:length(chrom))){
+      chr.name <- chrom[i]
+      print(chr.name)
+      chr.length <- chr.sizes[chr.sizes$chr == chr.name,2]
+      print(chr.length)
+      print("Calculating 1kb binsize coverage for forward strand.")
+
+      system(paste0("samtools view fwd.bam ",chr.name," > fwd_",chr.name,".sam"))
+      system(paste0("awk '$3~/^", chr.name, "$/ {print $2 \"\t\" $4}' fwd_",chr.name,".sam > fwd_",chr.name,".txt"))
+      fileIn <- paste0("fwd_",chr.name,".txt")
+      tmp <- read.table(fileIn, header=F, comment.char="",colClasses=c("integer","integer"),fill=TRUE)
+      tags <- tmp[,2]
+      tags[tags<=0] <- 1
+      breaks <- seq(0, chr.length+binSize, by=binSize)
+      h <- hist(tags, breaks=breaks, plot=FALSE)
+      w <- h$counts
+    
+      print("Calculating 1kb binsize coverage for reverse strand.")
+      system(paste0("samtools view rev.bam ",chr.name," > rev_",chr.name,".sam"))
+      system(paste0("awk '$3~/^", chr.name, "$/ {print $2 \"\t\" $4}' rev_",chr.name,".sam > rev_",chr.name,".txt"))
+      fileIn <- paste0("rev_",chr.name,".txt")
+      tmp <- read.table(fileIn, header=F, comment.char="",colClasses=c("integer","integer"),fill=TRUE)
+      tags <- tmp[,2]
+      tags[tags<=0] <- 1
+      breaks <- seq(0, chr.length+binSize, by=binSize)
+      h <- hist(tags, breaks=breaks, plot=FALSE)
+      c <- h$counts
+      system(paste0("rm *.sam"))
+      system(paste0("rm f*.txt"))
+      system(paste0("rm r*.txt"))
+
+      # raw polarity for later
+      polar <- c/(c+w)
+      polar[c<thresh & w<thresh] <- NA
+
+      # smoothing into 15kb binsize
+      print(paste("window size :", winS))
+      sw <- cumsum(w)
+      lg <- length(w)
+      from <- (-hwinS+2):(lg-hwinS+1)
+      to <- from+winS-1
+      from[from<1] <- 1
+      to[to>lg] <- lg
+
+      print("")
+      print(paste("number of bins :", length(w)))
+      print("")
+
+      win <- matrix(c(from, to), ncol=2)
+      ws <- apply(win ,1, function(x) { (sw[x[2]]-sw[x[1]])/winS } )
+
+      sc <- cumsum(c)
+      lg <- length(c)
+      cs <- apply(win ,1, function(x) { (sc[x[2]]-sc[x[1]])/winS } )
+
+      thresh = thresh/winS
+      print(paste("cutoff is :",thresh))
+      rfd <- (cs-ws)/(ws+cs)
+      rfd[is.na(rfd)] <- 0
+      rfd[ws<thresh & cs<thresh] <- 0
+      rfd[rfd > 1] <- 1
+      rfd[rfd < -1] <- -1
+      write.table(paste0("fixedStep chrom=",chr.name," start=1 step=1000 span=",winS,"000"),file = paste0(fileOut,"_RFD_bs",binSize/1000,"kb_sm_",winS,"kb.wig", sep=""), append = T, quote = FALSE, sep = "\t", col.names=F, row.names=F)
+      write.table(rfd, file = paste0(fileOut,"_RFD_bs",binSize/1000,"kb_sm_",winS,"kb.wig", sep=""), append = T, quote = FALSE, sep = "\t", col.names=F, row.names=F)
+
+      # HMM from new deltas =============================
+
+      # derive
+      bias <- cs/(ws+cs)
+      bias[is.na(bias)] <- 0.5
+      bias[ws<thresh & cs<thresh] <- 0.5
+
+      delta <- c(0,bias[-1]-bias[-length(bias)])
+      delta[is.na(delta)] <- 0.5
+
+      # affect symbols
+      if (is.na(quant[1])) { quant <- quantile(delta, probs = seq(0, 1, 0.20)) }
+      quant[1] <- -1
+      quant[length(quant)] <- 1
+
+      print("quantile borders :")
+      print(quant)
+      print("")
+      dx  <- unlist(sapply(delta, function(x) { ix <- which(x>=quant); ix[length(ix)] }))
+      dx[dx>5] <- 5
 
     # write log ==================================
 
     logFile <- paste(fileOut,"_log.txt", sep="")
-    write.table(data.frame(c("fileW",fileW)), file = logFile,
-                append = T, quote = FALSE, sep = "\t", col.names=F, row.names=F)
-    write.table(data.frame(c("fileC",fileC)), file = logFile,
-                append = T, quote = FALSE, sep = "\t", col.names=F, row.names=F)
+
     write.table(data.frame(c("fileOut",fileOut)), file = logFile,
                 append = T, quote = FALSE, sep = "\t", col.names=F, row.names=F)
-    write.table(paste("ptrans",chrom[i]), file = logFile,
+    write.table(paste("ptrans",chr.name), file = logFile,
                 append = T, quote = FALSE, sep = "\t", col.names=F, row.names=F)
     write.table(ptrans, file = logFile,
                 append = T, quote = FALSE, sep = "\t", col.names=F, row.names=F)
-    write.table(paste("pem",chrom[i]), file = logFile,
+    write.table(paste("pem",chr.name), file = logFile,
                 append = T, quote = FALSE, sep = "\t", col.names=F, row.names=F)
     write.table(pem, file = logFile,
                 append = T, quote = FALSE, sep = "\t", col.names=F, row.names=F)
-    write.table(data.frame("pstart",chrom[i]), file = logFile,
+    write.table(data.frame("pstart",chr.name), file = logFile,
                 append = T, quote = FALSE, sep = "\t", col.names=F, row.names=F)
     write.table(t(data.frame(pstart)), file = logFile,
                 append = T, quote = FALSE, sep = "\t", col.names=F, row.names=F)
-    write.table(data.frame("st",chrom[i]), file = logFile,
+    write.table(data.frame("st",chr.name), file = logFile,
                 append = T, quote = FALSE, sep = "\t", col.names=F, row.names=F)
     write.table(t(data.frame(st)), file = logFile,
                 append = T, quote = FALSE, sep = "\t", col.names=F, row.names=F)
-    write.table(data.frame("sym",chrom[i]), file = logFile,
+    write.table(data.frame("sym",chr.name), file = logFile,
                 append = T, quote = FALSE, sep = "\t", col.names=F, row.names=F)
     write.table(t(data.frame(sym)), file = logFile,
                 append = T, quote = FALSE, sep = "\t", col.names=F, row.names=F)
@@ -137,7 +215,7 @@ hmmPolarity <- function(fileW, fileC, fileOut, binSize=1000, thresh=30, winS=15,
     print("wait, viterbi...")
     seg <- viterbi(hmm=hmm1, observation=dx)
 
-    # we numerate 4 states for easily showing the state profiles ================================
+    # pour affichage du profil des etats
     prof <- rep(NA, times=length(seg))
     prof[seg=="U"] <- 1
     prof[seg=="H"] <- 0.2
@@ -149,7 +227,7 @@ hmmPolarity <- function(fileW, fileC, fileOut, binSize=1000, thresh=30, winS=15,
 
     write.table(prof, file = paste(fileOut,"_HMM.txt", sep=""), append = T, quote = FALSE, sep = "\t", col.names=F, row.names=F)
 
-    # adding the probability curve, record the local optimal state change position =========================
+    # adding the probability curve =========================
     print("wait, probabilities…")
     post <- posterior(hmm1,dx)
     prb <- rep(NA, length(seg))
@@ -243,7 +321,7 @@ hmmPolarity <- function(fileW, fileC, fileOut, binSize=1000, thresh=30, winS=15,
     slope_adj <- round(10^6*(polR-polL)/(to1-from1))
 
 
-    # writing output =============================
+    # writing =============================
     dataOut <- data.frame(chr, from=as.integer(from1), to=as.integer(to1), state=states, length=lg1, slope=inc1,
                           p, fcp=cpp, pol_mean=meanPol1, pol_left=ymin1, pol_right=ymax1,
                           na=napc, cor=corr1, slope_adj=slope_adj, pol_adj_left=polL, pol_adj_right=polR)
