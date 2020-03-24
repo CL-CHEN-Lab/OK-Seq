@@ -1,12 +1,12 @@
-# hmmPolarity: R package for profiling OK-Seq data to study the genome-wide DNA replication fork directionality
+# bam2hmm: R package for profiling OK-Seq data to study the genome-wide DNA replication fork directionality
 
-Package: hmmPolarity
+Package: bam2hmm
 
 Version: 0.1.0
 
 Depends: R (>= 3.1.0)
 
-Imports: HMM
+Imports: HMM, Rsamtools, GenomicAlignments
 
 License: GNU General Public License v3.0
 
@@ -16,9 +16,9 @@ LazyData: true
 
 RoxygenNote: 7.0.2
 
-Original Authors: Yves d'AUBENTON-CARAFA <yves@daubenton.net>, Chun-long CHEN <chunlong.chen@curie.fr>
+Original designer: Yves d'AUBENTON-CARAFA <yves@daubenton.net> (CNRS,E2BC)
 
-Second author and Maintainer: Yaqun LIU <yaqun.liu@curie.fr>
+Contributor and Maintainer: Chun-long CHEN <chunlong.chen@curie.fr> (Institut Curie), Yaqun LIU <yaqun.liu@curie.fr> (Institut Curie)
 
 ## Abstract: 
 
@@ -63,25 +63,25 @@ The final RFD profile and the relication origin/ termination zones calling are l
 
 ![    Fig.1 Red (blue) lines above (below) HeLa RFD profile indicate ascending (descending) HMM-detected segments (see Methods section); magenta and cyan arrows indicate genes. ](https://github.com/CL-CHEN-Lab/OK-Seq/blob/master/img/fig3.png) 
 
-## R package hmmPolarity function usage: 
+## R package bam2hmm function usage: 
 
-Please make sure that you already install and import the associated R package HMM before.
+Please make sure that you already install and import the associated R package HMM, Rsamtools and GenomicAlignments before executing this function.
 
 ### For the input:
 
-Please preprare two .bedgraph files (The format is by defaut as 4 columns : chr, start, end and counts) for each strand (watson and crick) of OK-Seq data. And OK-seq data needs to be calculated into 1kb adjacent binsize, which can be easily got by using some bio-informatic tools like deeptools.
+Please preprare the aligned OK-Seq data, which is a Bam file with the corresponding indexed file (.bai) and the annotation coordinates which containing the all the chromosomes and their lengths(can be easily download from UCSC, e.g. hg19.chr.sizes.txt)
 
-Then just easily enter the pathways linking to your 2 bedgraph files and also define the prefix of the output files:
+Then just enter the pathway linking to your bam file and the annotation file then also define the prefix of the output files:
 
-(e.g. hmmPolarity(fileW= ".../my_watson_1kb_okseq.bedgraph", fileC=".../my_crick_1kb_okseq.bedgraph", fileOut=".../my_hmm_OK_result"))
-
+(e.g. bam2hmm(bamfile = "my.bam",chrsizes = "hg19.chr.size.txt",fileOut = "my_hmm"))
+This function can automatically identify that the input bam is pair-end or single-end then seperate the bam into 2 strands to calculate the 1kb binsize coverage respectively. 
 By default, this R function takes the threshold as 30 to remove the abnormal counts for each strand and then smooths the data into 15kb windoz size to get the best RFD profile and the corresponding HMM calling results.
 
 ### For the output:
 
 You will obtain 8 output files which are:
 
-1, RFD file ("_RFD.wig") in wiggle format that allows you to visualize directly the replication fork direction profile in some integrative genomic viewers or browsers like IGV/IGB.
+1, RFD file ("_RFD.wig") in wiggle format that allows you to visualize directly the replication fork direction profile in some integrative genomic viewers or browsers like IGV/IGB. You can also transform the wig into bigwig by the UCSC tool wigToBigWig (http://hgdownload.soe.ucsc.edu/admin/exe/)
 
 2,log file ("_log.txt") that records all of the parameters you use and also the default setting information.
 
@@ -99,4 +99,6 @@ You will obtain 8 output files which are:
 
 ## Reference:
 
-Petryk, Nataliya, et al. "Replication landscape of the human genome." Nature communications 7 (2016): 10208.
+Petryk N., Kahli M., d'Aubenton-Carafa Y., Jaszczsyzyn Y., Shen Y., Sylvain M., Thermes C., CHEN C.L., and Hyrien O.. Replication landscape of the human genome. Nat Commun 7, 10208 (2016). https://doi.org/10.1038/ncomms10208
+
+A.Promonet, I. Padioleau, Y. Liu, L. Sanz, A. Schmitz1, M. Skrzypczak, A. Sarrazin, K. Ginalski, F. Chedin, M. Rowicka, C.L. Chen, Y.L. Lin and P. Pasero. Topoisomerase 1 prevents R-loop mediated replication stress at transcription termination sites. Nat. Commun. Under revision.
