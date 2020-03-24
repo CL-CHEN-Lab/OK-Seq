@@ -1,0 +1,31 @@
+# install the necessary R packages via BioConductor:
+
+BioManager::install("HMM")
+BioManager::install("GenomicAlignments")
+BioManager::install("S4Vectors")
+
+# Run script InitiationZoneCalling_OKseq.R
+
+bam2hmm(bamfile = "MCF7-ethanol-24h_20190122_sorted_delDupl_chr21_22.bam", chrsizes = "hg19.chr.size.txt",fileOut = "20200324_FinalTest_hmm")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
