@@ -1,6 +1,6 @@
-# bam2OKseqHMM: R package for profiling OK-Seq data to study the genome-wide DNA replication fork directionality
+# OKseqHMM: R package for profiling OK-Seq data to study the genome-wide DNA replication fork directionality
 
-Package: bam2hmm
+Package: OKseqHMM
 
 Version: 0.1.0
 
