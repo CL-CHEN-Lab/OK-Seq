@@ -79,17 +79,19 @@ By default, this R function takes the threshold as 30 to remove the abnormal cou
 
 ### For the output:
 
-You will obtain 8 output files which are:
+You will obtain 12 output files which are:
 
-1, RFD file ("_RFD.wig") in wiggle format that allows you to visualize directly the replication fork direction profile in some integrative genomic viewers or browsers like IGV/IGB. You can also transform the wig into bigwig by the UCSC tool wigToBigWig (http://hgdownload.soe.ucsc.edu/admin/exe/)
+1-4, 2 bam files for the forward and reverse strand seperated from the input bam and their corresponding index files.
 
-2,log file ("_log.txt") that records all of the parameters you use and also the default setting information.
+5, RFD file ("_RFD.bedgraph") in bedgraph format that allows you to visualize directly the replication fork direction profile in some integrative genomic viewers or browsers like IGV/IGB. You can also transform the bedgraph into bigWig by the UCSC tool bedGraphToBigWig (http://hgdownload.soe.ucsc.edu/admin/exe/) to get a binary compressed file.
 
-3, text file ("_HMM.txt") that records all of the global optimal hidden states calculated by HMM Viterbi algorithm.
+6,log file ("_log.txt") that records all of the parameters you use and also the default setting information.
 
-4,text file ("_HMMpropa.txt") that records all of the previous state positions that caused the maximum local probability of a state by HMM posterior algorithm.
+7, text file ("_HMM.txt") that records all of the global optimal hidden states calculated by HMM Viterbi algorithm.
 
-5-8, generate 4 text files that records the genomic positions and also the other corresponding possibilities for the final identified optimal states:
+8,text file ("_HMMpropa.txt") that records all of the previous state positions that caused the maximum local probability of a state by HMM posterior algorithm.
+
+9-12, generate 4 text files that records the genomic positions and also the other corresponding possibilities for the final identified optimal states:
 
 "_HMMsegments_IZ.txt" is for the replication initiation zone calling result.
 
