@@ -16,7 +16,7 @@ LazyData: true
 
 RoxygenNote: 7.0.2
 
-Original designer: Yves d'AUBENTON-CARAFA <yves@daubenton.net> (CNRS,E2BC)
+Original designer: Yves d'AUBENTON-CARAFA <yves@daubenton.net> (CNRS,I2BC)
 
 Contributor and Maintainer: Chun-long CHEN <chunlong.chen@curie.fr> (Institut Curie), Yaqun LIU <yaqun.liu@curie.fr> (Institut Curie)
 
