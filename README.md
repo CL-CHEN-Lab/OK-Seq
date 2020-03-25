@@ -46,7 +46,7 @@ A four-state HMM was used to detect within the RFD profiles the AS, DS and FS se
 <br/><br/><br/><br/><br/>
 
 
-In segemantion process, the RFD values were computed within 15 kb sliding windows (stepped by 1 kb across the autosomes). The HMM used the Delta RFD values between adjacent windows (that is, Delta RFDn = (RFD(n+1)  - RFD(n))/2 for window n). Windows with <30 reads were masked. The Delta RFD values were divided into five quantiles and the HMM package of R (http://www.r-project.org/) was used to perform the HMM prediction with probabilities of transition and emission indicated as below. 
+In segemantion process, the RFD values were computed within 15 kb sliding windows (stepped by 1 kb across the autosomes). The HMM used the Delta RFD values between adjacent windows (that is, Delta RFDn = (RFD(n+1)  - RFD(n))/2 for window n). Windows with <30 reads on both strands were masked. The Delta RFD values were divided into five quantiles and the HMM package of R (http://www.r-project.org/) was used to perform the HMM prediction with probabilities of transition and emission indicated as below. 
 
 
 !["Fig.3 emission (left table) and transition (right table) probabilities used in the HMM segmentation." ](https://github.com/CL-CHEN-Lab/OK-Seq/blob/master/img/fig2.png) 
@@ -101,6 +101,6 @@ You will obtain 12 output files which are:
 
 ## Reference:
 
-Petryk N., Kahli M., d'Aubenton-Carafa Y., Jaszczsyzyn Y., Shen Y., Sylvain M., Thermes C., CHEN C.L.#, and Hyrien O.# (#co-last authors). Replication landscape of the human genome. Nat. Commun. 7, 10208 (2016). https://doi.org/10.1038/ncomms10208
+Petryk N., Kahli M., d'Aubenton-Carafa Y., Jaszczsyzyn Y., Shen Y., Sylvain M., Thermes C., CHEN C.L.#, and Hyrien O.# (#co-last authors). Replication landscape of the human genome. *Nat. Commun.* 7, 10208 (2016). https://doi.org/10.1038/ncomms10208
 
-Promonet A.*, Padioleau I.*, Liu Y.* (*co-first authors), Sanz L., Schmitz A., Skrzypczak M., Sarrazin A., Ginalski K., Chedin F., Rowicka  M., Chen C.L.#, Lin Y.L.# and Pasero P.# (#co-last authors). Topoisomerase 1 prevents R-loop mediated replication stress at transcription termination sites. Nat. Commun. Under revision.
+Promonet A.\*, Padioleau I.\*, Liu Y.\* (\*co-first authors), Sanz L., Schmitz A., Skrzypczak M., Sarrazin A., Ginalski K., Chedin F., Rowicka  M., Chen C.L.#, Lin Y.L.# and Pasero P.# (#co-last authors). Topoisomerase 1 prevents R-loop mediated replication stress at transcription termination sites. *Nat. Commun.* Under revision.
