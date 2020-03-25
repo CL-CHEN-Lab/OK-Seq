@@ -107,7 +107,7 @@ bam2hmm <- function(bamfile,chrsizes,fileOut, binSize=1000, thresh=30, winS=15,h
       tags[tags<=0] <- 1
       breaks <- seq(0, chr.length+binSize, by=binSize)
       h <- hist(tags, breaks=breaks, plot=FALSE)
-      w <- h$counts
+      c <- h$counts
     
       print("Calculating 1kb binsize coverage for reverse strand.")
       system(paste0("samtools view rev.bam ",chr.name," > rev_",chr.name,".sam"))
@@ -118,7 +118,7 @@ bam2hmm <- function(bamfile,chrsizes,fileOut, binSize=1000, thresh=30, winS=15,h
       tags[tags<=0] <- 1
       breaks <- seq(0, chr.length+binSize, by=binSize)
       h <- hist(tags, breaks=breaks, plot=FALSE)
-      c <- h$counts
+      w <- h$counts
       system(paste0("rm *.sam"))
       system(paste0("rm f*.txt"))
       system(paste0("rm r*.txt"))
@@ -154,8 +154,14 @@ bam2hmm <- function(bamfile,chrsizes,fileOut, binSize=1000, thresh=30, winS=15,h
       rfd[ws<thresh & cs<thresh] <- 0
       rfd[rfd > 1] <- 1
       rfd[rfd < -1] <- -1
-      write.table(paste0("fixedStep chrom=",chr.name," start=1 step=1000 span=",winS,"000"),file = paste0(fileOut,"_RFD_bs",binSize/1000,"kb_sm_",winS,"kb.wig", sep=""), append = T, quote = FALSE, sep = "\t", col.names=F, row.names=F)
-      write.table(rfd, file = paste0(fileOut,"_RFD_bs",binSize/1000,"kb_sm_",winS,"kb.wig", sep=""), append = T, quote = FALSE, sep = "\t", col.names=F, row.names=F)
+    
+      start_pos <- as.integer(breaks[1:length(breaks)-1])
+      end_pos <- as.integer(breaks[2 : length(breaks)])
+      chrName <- rep(chr.name,length(rfd))
+      df.1kb <-data.frame(chr=chrName,startPos = start_pos,endPos = end_pos,rd_nb=rfd)
+      #restrict the last position is the chr.length, not exceed that.
+      df.1kb$endPos[nrow(df.1kb)] <- chr.length
+      write.table(df.1kb, file = paste0(fileOut,"_RFD_bs",binSize/1000,"kb_sm_",winS,"kb.bedgraph", sep=""), append = T, quote = FALSE, sep = "\t", col.names=F, row.names=F)
 
       # HMM from new deltas =============================
 
