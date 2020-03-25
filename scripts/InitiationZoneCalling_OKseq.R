@@ -52,8 +52,8 @@ bam2hmm <- function(bamfile,chrsizes,fileOut, binSize=1000, thresh=30, winS=15,h
     system(paste0("samtools view -b -f 80 ",bamfile," > a.fwd2.bam"))
 
     # combine the temporary files
-    system(paste0("samtools merge -f fwd.bam a.fwd1.bam a.fwd2.bam"))
-    system(paste0("samtools index fwd.bam"))
+    system(paste0("samtools merge -f ",fileOut,"_fwd.bam a.fwd1.bam a.fwd2.bam"))
+    system(paste0("samtools index ",fileOut,"_fwd.bam"))
 
     # remove the temporary files
     system(paste0("rm a.fwd*.bam"))
@@ -68,10 +68,10 @@ bam2hmm <- function(bamfile,chrsizes,fileOut, binSize=1000, thresh=30, winS=15,h
     system(paste0("samtools view -b -f 64 -F 16 ",bamfile," > a.rev2.bam"))
 
     # merge the temporary files
-    system(paste0("samtools merge -f rev.bam a.rev1.bam a.rev2.bam"))
+    system(paste0("samtools merge -f ",fileOut,"_rev.bam a.rev1.bam a.rev2.bam"))
 
     # index the merged, filtered BAM file
-    system(paste0("samtools index rev.bam"))
+    system(paste0("samtools index ",fileOut,"_rev.bam"))
     # remove temporary files
     system(paste0("rm a.rev*.bam"))
   }
@@ -80,12 +80,12 @@ bam2hmm <- function(bamfile,chrsizes,fileOut, binSize=1000, thresh=30, winS=15,h
     print("This bam is single-end.")
     print("Seperating the forward strand bam.")
     # Forward strand.
-    system(paste0("samtools view -bh -F 20 ",bamfile," > fwd.bam"))
-    system(paste0("samtools index fwd.bam"))
+    system(paste0("samtools view -bh -F 20 ",bamfile," > ",fileOut,"_fwd.bam"))
+    system(paste0("samtools index ",fileOut,"_fwd.bam"))
     print("Seperating the reverse strand bam.")
     # Reverse strand
-    system(paste0("samtools view -bh -f 16 ",bamfile," > rev.bam"))
-    system(paste0("samtools index rev.bam"))
+    system(paste0("samtools view -bh -f 16 ",bamfile," > ",fileOut,"_rev.bam"))
+    system(paste0("samtools index ",fileOut,"_rev.bam"))
 
   }
 
@@ -99,7 +99,7 @@ bam2hmm <- function(bamfile,chrsizes,fileOut, binSize=1000, thresh=30, winS=15,h
       print(chr.length)
       print("Calculating 1kb binsize coverage for forward strand.")
 
-      system(paste0("samtools view fwd.bam ",chr.name," > fwd_",chr.name,".sam"))
+      system(paste0("samtools view ",fileOut,"_fwd.bam ",chr.name," > fwd_",chr.name,".sam"))
       system(paste0("awk '$3~/^", chr.name, "$/ {print $2 \"\t\" $4}' fwd_",chr.name,".sam > fwd_",chr.name,".txt"))
       fileIn <- paste0("fwd_",chr.name,".txt")
       tmp <- read.table(fileIn, header=F, comment.char="",colClasses=c("integer","integer"),fill=TRUE)
@@ -110,7 +110,7 @@ bam2hmm <- function(bamfile,chrsizes,fileOut, binSize=1000, thresh=30, winS=15,h
       c <- h$counts
     
       print("Calculating 1kb binsize coverage for reverse strand.")
-      system(paste0("samtools view rev.bam ",chr.name," > rev_",chr.name,".sam"))
+      system(paste0("samtools view ",fileOut,"_rev.bam ",chr.name," > rev_",chr.name,".sam"))
       system(paste0("awk '$3~/^", chr.name, "$/ {print $2 \"\t\" $4}' rev_",chr.name,".sam > rev_",chr.name,".txt"))
       fileIn <- paste0("rev_",chr.name,".txt")
       tmp <- read.table(fileIn, header=F, comment.char="",colClasses=c("integer","integer"),fill=TRUE)
@@ -147,7 +147,7 @@ bam2hmm <- function(bamfile,chrsizes,fileOut, binSize=1000, thresh=30, winS=15,h
       lg <- length(c)
       cs <- apply(win ,1, function(x) { (sc[x[2]]-sc[x[1]])/winS } )
 
-      thresh = thresh/winS
+   
       print(paste("cutoff is :",thresh))
       rfd <- (cs-ws)/(ws+cs)
       rfd[is.na(rfd)] <- 0
