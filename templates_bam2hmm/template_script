@@ -4,9 +4,9 @@ BioManager::install("HMM")
 BioManager::install("GenomicAlignments")
 BioManager::install("S4Vectors")
 
-# Run script InitiationZoneCalling_OKseq.R
+# Run script OKseqHMM.R
 
-bam2hmm(bamfile = "template_chr21_22.bam", chrsizes = "hg19.chr.size.txt",fileOut = "20200323_hmm")
+bam2hmm(bamfile = "template_chr21_22.bam", chrsizes = "hg19.chr.size.txt",winS=15, fileOut = "20200323_hmm")
 
 
 
