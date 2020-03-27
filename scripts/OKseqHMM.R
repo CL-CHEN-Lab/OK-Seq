@@ -1,16 +1,16 @@
-#' A bam2hmm Function
+#' OKseqHMM backage
 #'
-#' This function allows you to identify most of the replication initiation/termination zones and also the intermediate states which RFD profiles are noramelly flat.
+#' This function allows you to generate the two corresponding strand bam files, to generate the RFD profiles and to identify most of the replication initiation/termination zones and also the intermediate states which RFD profiles are noramelly flat.
 #' @keywords OK-Seq, RFD, peak calling, HMM
 #' @export
 #' @examples
-#' bam2hmm()
+#' OKseqHMM()
 
 
 #     Initialize HMM 4 states, observations, start probability, emission probability, transition probability
 #============================================================================================================
 
-bam2hmm <- function(bamfile,chrsizes,fileOut, binSize=1000, thresh=30, winS=15,hwinS=winS/2,
+OKseqHMM <- function(bamfile,chrsizes,fileOut, binSize=1000, thresh=30, winS, hwinS=winS/2,
                         st=c("D", "L", "H", "U"),
                         sym=c("V", "W", "X", "Y", "Z"),
                         pstart=rep(1/4, 4),
@@ -126,9 +126,24 @@ bam2hmm <- function(bamfile,chrsizes,fileOut, binSize=1000, thresh=30, winS=15,h
       # raw polarity for later
       polar <- c/(c+w)
       polar[c<thresh & w<thresh] <- NA
+    
+      # 1kb RFD:
+      rfd <- (c-w)/(w+c)
+      rfd[is.na(rfd)] <- 0
+      rfd[w<thresh & c<thresh] <- 0
+      rfd[rfd > 1] <- 1
+      rfd[rfd < -1] <- -1
+    
+      start_pos <- as.integer(breaks[1:length(breaks)-1])
+      end_pos <- as.integer(breaks[2 : length(breaks)])
+      chrName <- rep(chr.name,length(rfd))
+      df <-data.frame(chr=chrName,startPos = start_pos,endPos = end_pos,rd_nb=rfd)
+      #restrict the last position is the chr.length, not exceed that.
+      df$endPos[nrow(df)] <- chr.length
+      write.table(df, file = paste0(fileOut,"_RFD_bs",binSize/1000,"kb.bedgraph", sep=""), append = T, quote = FALSE, sep = "\t", col.names=F, row.names=F)
 
-      # smoothing into 15kb binsize
-      print(paste("window size :", winS))
+      # smoothing RFD
+      print(paste("Smoothing window size :", winS, "kb"))
       sw <- cumsum(w)
       lg <- length(w)
       from <- (-hwinS+2):(lg-hwinS+1)
@@ -158,10 +173,10 @@ bam2hmm <- function(bamfile,chrsizes,fileOut, binSize=1000, thresh=30, winS=15,h
       start_pos <- as.integer(breaks[1:length(breaks)-1])
       end_pos <- as.integer(breaks[2 : length(breaks)])
       chrName <- rep(chr.name,length(rfd))
-      df.1kb <-data.frame(chr=chrName,startPos = start_pos,endPos = end_pos,rd_nb=rfd)
+      df <-data.frame(chr=chrName,startPos = start_pos,endPos = end_pos,rd_nb=rfd)
       #restrict the last position is the chr.length, not exceed that.
-      df.1kb$endPos[nrow(df.1kb)] <- chr.length
-      write.table(df.1kb, file = paste0(fileOut,"_RFD_bs",binSize/1000,"kb_sm_",winS,"kb.bedgraph", sep=""), append = T, quote = FALSE, sep = "\t", col.names=F, row.names=F)
+      df$endPos[nrow(df)] <- chr.length
+      write.table(df, file = paste0(fileOut,"_RFD_bs",binSize/1000,"kb_sm_",winS,"kb.bedgraph", sep=""), append = T, quote = FALSE, sep = "\t", col.names=F, row.names=F)
 
       # HMM from new deltas =============================
 
