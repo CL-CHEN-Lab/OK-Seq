@@ -71,27 +71,27 @@ Please make sure that you already install and import the associated R package HM
 
 Please preprare the aligned OK-Seq data, which is a Bam file with the corresponding indexed file (.bai) and the annotation coordinates which containing all chromosomes and their lengths (can be easily downloaded from UCSC, e.g. hg19.chr.sizes.txt).
 
-Then just enter the pathway linking to your bam file and the annotation file, and then also define the prefix of the output files:
+Then just enter the pathway linking to your bam file and the annotation file, the smoothing window size (e.g. 15 as kilobase) and then also define the prefix of the output files:
 
-(e.g. OKseqHMM(bamfile = "my.bam",chrsizes = "hg19.chr.size.txt",fileOut = "my_hmm"))
+(e.g. OKseqHMM(bamfile = "my.bam",chrsizes = "hg19.chr.size.txt", winS=15, fileOut = "my_hmm"))
 This function can automatically identify that the input bam is pair-end or single-end then seperate the bam into 2 strands to calculate the 1kb binsize coverage respectively. 
 By default, this R function takes the threshold as 30 to remove the abnormal counts for each strand and then smooths the data into 15kb windoz size to get the best RFD profile and the corresponding HMM calling results.
 
 ### For the output:
 
-You will obtain 12 output files which are:
+You will obtain 13 output files which are:
 
-1-4, 2 bam files for the forward and reverse strand seperated from the input bam and their corresponding index files.
+1-4, two bam files for the forward and reverse strand seperated from the input bam and their corresponding index files.
 
-5, RFD file ("_RFD.bedgraph") in bedgraph format that allows you to visualize directly the replication fork direction profile in some integrative genomic viewers or browsers like IGV/IGB. You can also transform the bedgraph into bigWig by the UCSC tool bedGraphToBigWig (http://hgdownload.soe.ucsc.edu/admin/exe/) to get a binary compressed file.
+5-6, two RFD files ("_RFD.bedgraph", one is 1kb binsize and the smoothing one) in bedgraph format that allow you to visualize directly the replication fork direction profile in some integrative genomic viewers or browsers like IGV/IGB. You can also transform the bedgraphs into bigWig by the UCSC tool bedGraphToBigWig (http://hgdownload.soe.ucsc.edu/admin/exe/) to get binary compressed files.
 
-6,log file ("_log.txt") that records all of the parameters you use and also the default setting information.
+7,log file ("_log.txt") that records all of the parameters you use and also the default setting information.
 
-7,HMM result text file ("_HMM.txt") that records all of the global optimal hidden states calculated by HMM Viterbi algorithm.
+8,HMM result text file ("_HMM.txt") that records all of the global optimal hidden states calculated by HMM Viterbi algorithm.
 
-8,HMM result text file ("_HMMpropa.txt") that records all of the previous state positions that caused the maximum local probability of a state by HMM posterior algorithm.
+9,HMM result text file ("_HMMpropa.txt") that records all of the previous state positions that caused the maximum local probability of a state by HMM posterior algorithm.
 
-9-12, generate 4 result text files that records the genomic positions and also the other corresponding probabilities for the final identified optimal states:
+10-13, generate 4 result text files that records the genomic positions and also the other corresponding probabilities for the final identified optimal states:
 
 "_HMMsegments_IZ.txt" is for the replication initiation zone calling result.
 
