@@ -1,4 +1,4 @@
-Download the test bam file and test it by running OKseqHMM. Then you should get the corresponding results shown in current folder.
+Download the test bam file and use the template.script to run OKseqHMM. Then you should get the corresponding results shown in current folder.
 
 To get the test bam file, please click the following link to download:
 http://xfer.curie.fr/get/LfyDX92pNQs/template.bam.zip
