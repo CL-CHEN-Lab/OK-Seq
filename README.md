@@ -99,6 +99,11 @@ You will obtain 13 output files which are:
 
 "_HMMsegments_highFlatZone.txt" and "_HMMsegments_LowFlatZone.txt" are for the two replication intermediate (flat) zones calling results.
 
+### Test data and published results
+You can find a test dataset and the corresponding results in the "templates_bam2hmm" folder.
+
+And the OK-Seq data and results from our previous publications are available at the "published_results" folder.
+
 ## Reference:
 
 Petryk N., Kahli M., d'Aubenton-Carafa Y., Jaszczsyzyn Y., Shen Y., Sylvain M., Thermes C., CHEN C.L.#, and Hyrien O.# (#co-last authors). Replication landscape of the human genome. ***Nat. Commun.*** 7, 10208 (2016). https://doi.org/10.1038/ncomms10208
