@@ -65,7 +65,7 @@ The final RFD profile and the relication origin/ termination zones calling are l
 
 ## R package OKseqHMM function usage: 
 
-Please make sure that you already install and import the associated R package HMM, Rsamtools and GenomicAlignments before executing this function.
+Please make sure that you already install and import the associated R package HMM, Rsamtools and GenomicAlignments in R or Rstudio, and also install samtools in console or terminal before executing this function.
 
 ### For the input:
 
