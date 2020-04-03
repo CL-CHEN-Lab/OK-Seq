@@ -74,12 +74,14 @@ Please preprare the aligned OK-Seq data, which is a Bam file with the correspond
 Then just enter the pathway linking to your bam file and the annotation file, the smoothing window size (e.g. 15 as kilobase) and then also define the prefix of the output files:
 
 (e.g. OKseqHMM(bamfile = "my.bam",chrsizes = "hg19.chr.size.txt", winS=15, fileOut = "my_hmm"))
-This function can automatically identify that the input bam is pair-end or single-end then seperate the bam into 2 strands to calculate the 1kb binsize coverage respectively. 
-By default, this R function takes the threshold as 30 to remove the abnormal counts for each strand and then smooths the data into 15kb windoz size to get the best RFD profile and the corresponding HMM calling results.
+
+The program can automatically identify that the input bam file is paired-ends or single-end data, then seperate the bam into W and C strands, respectively, to calculate the 1kb binsize coverage. 
+
+By default, this R function takes the threshold as 30 to remove the abnormal counts for each strand and then smooths the data into 15 kb sliding windows (with a step of 1 kb) to get the best RFD profile and the corresponding HMM calling results.
 
 ### For the output:
 
-You will obtain 13 output files which are:
+You will obtain 13 output files, which are:
 
 1-4, two bam files for the forward and reverse strand seperated from the input bam and their corresponding index files.
 
