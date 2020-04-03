@@ -3,4 +3,6 @@ Download the test bam file and run OKseqHMM as indicated in the template.script.
 To get the test bam file, please click the following link to download:
 http://xfer.curie.fr/get/LfyDX92pNQs/template.bam.zip
 
+The default paramaters of the program are set based on our OK-Seq data. You might adjust the paramaters to adapt to your own data. Good luck!
+
 If the link is not accessible, please contact the maintainer for the update.
