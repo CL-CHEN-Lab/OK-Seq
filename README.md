@@ -71,17 +71,17 @@ Please make sure that you already install and import the associated R package HM
 
 Please preprare the aligned OK-Seq data, which is a Bam file with the corresponding indexed file (.bai) and the annotation coordinates which containing all chromosomes and their lengths (can be easily downloaded from UCSC, e.g. hg19.chr.sizes.txt).
 
-Then just enter the pathway linking to your bam file and the annotation file, the smoothing window size (e.g. 15 as kilobase) and then also define the prefix of the output files:
+Then just enter the pathway linking to your bam file and the annotation file, read coverage threshold(e.g. 10), the smoothing window size (e.g. 15 as kilobase) and then also define the prefix of the output files:
 
-(e.g. OKseqHMM(bamfile = "my.bam",chrsizes = "hg19.chr.size.txt", winS=15, fileOut = "my_hmm"))
+(e.g. OKseqHMM(bamfile = "my.bam",threshold = 10, chrsizes = "hg19.chr.size.txt", winS=15, fileOut = "my_hmm"))
 
 The program can automatically identify that the input bam file is paired-ends or single-end data, then seperate the bam into W and C strands, respectively, to calculate the 1kb binsize coverage. 
 
-By default, this R function takes the threshold as 30 to remove the abnormal counts for each strand and then smooths the data into 15 kb sliding windows (with a step of 1 kb) to get the best RFD profile and the corresponding HMM calling results.
+This R function takes the threshold as user set to remove the abnormal counts for each strand and then smooths the data into 15 kb sliding windows (with a step of 1 kb) to get the best RFD profile and the corresponding HMM calling results.
 
 ### For the output:
 
-You will obtain 13 output files, which are:
+You will obtain a serie of output files, which are:
 
 1-4, two bam files for the forward and reverse strand seperated from the input bam and their corresponding index files.
 
@@ -93,13 +93,13 @@ You will obtain 13 output files, which are:
 
 9,HMM result text file ("_HMMpropa.txt") that records all of the previous state positions that caused the maximum local probability of a state by HMM posterior algorithm.
 
-10-13, generate 4 result text files that records the genomic positions and also the other corresponding probabilities for the final identified optimal states:
+10-17, generate 8 result text files that records the genomic positions and also the other corresponding probabilities for the final identified optimal states:
 
-"_HMMsegments_IZ.txt" is for the replication initiation zone calling result.
+"_HMMsegments_IZ.txt/bed" is for the replication initiation zone calling result.
 
-"_HMMsegments_TZ.txt" is for the replication termination zone calling result.
+"_HMMsegments_TZ.txt/bed" is for the replication termination zone calling result.
 
-"_HMMsegments_highFlatZone.txt" and "_HMMsegments_LowFlatZone.txt" are for the two replication intermediate (flat) zones calling results.
+"_HMMsegments_highFlatZone.txt/bed" and "_HMMsegments_LowFlatZone.txt/bed" are for the two replication intermediate (flat) zones calling results.
 
 ### Test data and published results
 You can find a test dataset and the corresponding results in the "templates_bam2hmm" folder.
