@@ -10,7 +10,7 @@
 #     Initialize HMM 4 states, observations, start probability, emission probability, transition probability
 #============================================================================================================
 
-OKseqHMM <- function(bamfile,chrsizes,fileOut, binSize=1000, thresh=30, winS, hwinS=winS/2,
+OKseqHMM <- function(bamfile,chrsizes,fileOut, thresh, winS, hwinS=winS/2, binSize=1000,
                         st=c("D", "L", "H", "U"),
                         sym=c("V", "W", "X", "Y", "Z"),
                         pstart=rep(1/4, 4),
@@ -43,13 +43,8 @@ OKseqHMM <- function(bamfile,chrsizes,fileOut, binSize=1000, thresh=30, winS, hw
     #Generate forward and reverse strand bam files:
     print("This bam is pair-end.")
     print("Seperating the forward strand bam.")
-    # include reads that are 2nd in a pair (128);
-    # exclude reads that are mapped to the reverse strand (16)
-    system(paste0("samtools view -b -f 128 -F 16 ",bamfile," > a.fwd1.bam"))
-
-    # exclude reads that are mapped to the reverse strand (16) and
-    # first in a pair (64): 64 + 16 = 80
-    system(paste0("samtools view -b -f 80 ",bamfile," > a.fwd2.bam"))
+    system(paste0("samtools view -bh -f 99 ",bamfile," > a.fwd1.bam"))
+    system(paste0("samtools view -bh -f 147 ",bamfile," > a.fwd2.bam"))
 
     # combine the temporary files
     system(paste0("samtools merge -f ",fileOut,"_fwd.bam a.fwd1.bam a.fwd2.bam"))
@@ -57,16 +52,12 @@ OKseqHMM <- function(bamfile,chrsizes,fileOut, binSize=1000, thresh=30, winS, hw
 
     # remove the temporary files
     system(paste0("rm a.fwd*.bam"))
-    
+
     print("Seperating the reverse strand bam.")
-    # include reads that map to the reverse strand (128)
-    # and are second in a pair (16): 128 + 16 = 144
-    system(paste0("samtools view -b -f 144 ",bamfile," > a.rev1.bam"))
-
-    # include reads that are first in a pair (64), but
-    # exclude those ones that map to the reverse strand (16)
-    system(paste0("samtools view -b -f 64 -F 16 ",bamfile," > a.rev2.bam"))
-
+    
+    system(paste0("samtools view -bh -f 83 ",bamfile," > a.rev1.bam"))
+    system(paste0("samtools view -bh -f 163 ",bamfile," > a.rev2.bam"))
+    
     # merge the temporary files
     system(paste0("samtools merge -f ",fileOut,"_rev.bam a.rev1.bam a.rev2.bam"))
 
