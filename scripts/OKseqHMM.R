@@ -10,21 +10,21 @@
 #     Initialize HMM 4 states, observations, start probability, emission probability, transition probability
 #============================================================================================================
 
-OKseqHMM <- function(bamfile,chrsizes,fileOut, thresh, winS, hwinS=winS/2, binSize=1000,
-                        st=c("D", "L", "H", "U"),
-                        sym=c("V", "W", "X", "Y", "Z"),
-                        pstart=rep(1/4, 4),
-                        pem=t(matrix(c(0.383886256, 0.255924171, 0.170616114, 0.113744076, 0.075829384,
-                                       .10,.20,.40,.20,.10,
-                                       .10,.20,.40,.20,.10,
-                                       0.022222222, 0.033333333, 0.066666667, 0.211111111, 0.666666667),
+OKseqHMM <- function(bamfile,chrsizes,fileOut, thresh, winS, binSize=1000, hwinS=winS/2,
+                     st=c("D", "L", "H", "U"),
+                     sym=c("V", "W", "X", "Y", "Z"),
+                     pstart=rep(1/4, 4),
+                     pem=t(matrix(c(0.383886256, 0.255924171, 0.170616114, 0.113744076, 0.075829384,
+                                    .10,.20,.40,.20,.10,
+                                    .10,.20,.40,.20,.10,
+                                    0.022222222, 0.033333333, 0.066666667, 0.211111111, 0.666666667),
+                                  ncol=4)),
+                     ptrans=t(matrix(c(0.9999,0.000020,0,0.000080,
+                                       0,0.999,0,0.001,
+                                       0.001,0,0.999,0,
+                                       0.000080,0,0.000020,0.9999),
                                      ncol=4)),
-                        ptrans=t(matrix(c(0.9999,0.000020,0,0.000080,
-                                          0,0.999,0,0.001,
-                                          0.001,0,0.999,0,
-                                          0.000080,0,0.000020,0.9999),
-                                        ncol=4)),
-                        quant=c(-1, -0.0082058939609862, -0.00141890249101162, 0.00103088286465956, 0.00800467305420799, 1))
+                     quant=c(-1, -0.0082058939609862, -0.00141890249101162, 0.00103088286465956, 0.00800467305420799, 1))
 
 {
 
@@ -43,9 +43,15 @@ OKseqHMM <- function(bamfile,chrsizes,fileOut, thresh, winS, hwinS=winS/2, binSi
     #Generate forward and reverse strand bam files:
     print("This bam is pair-end.")
     print("Seperating the forward strand bam.")
-    system(paste0("samtools view -bh -f 99 ",bamfile," > a.fwd1.bam"))
-    system(paste0("samtools view -bh -f 147 ",bamfile," > a.fwd2.bam"))
+    # include reads that are 2nd in a pair (128);
+    # exclude reads that are mapped to the reverse strand (16)
+    system(paste0("samtools view -b -f 128 -F 16 ",bamfile," > a.fwd1.bam"))
+    
 
+    # exclude reads that are mapped to the reverse strand (16) and
+    # first in a pair (64): 64 + 16 = 80
+    system(paste0("samtools view -b -f 80 ",bamfile," > a.fwd2.bam"))
+    
     # combine the temporary files
     system(paste0("samtools merge -f ",fileOut,"_fwd.bam a.fwd1.bam a.fwd2.bam"))
     system(paste0("samtools index ",fileOut,"_fwd.bam"))
@@ -54,10 +60,15 @@ OKseqHMM <- function(bamfile,chrsizes,fileOut, thresh, winS, hwinS=winS/2, binSi
     system(paste0("rm a.fwd*.bam"))
 
     print("Seperating the reverse strand bam.")
+    # include reads that map to the reverse strand (128)
+    # and are second in a pair (16): 128 + 16 = 144
+    system(paste0("samtools view -b -f 144 ",bamfile," > a.rev1.bam"))
+
+    # include reads that are first in a pair (64), but
+    # exclude those ones that map to the reverse strand (16)
+    system(paste0("samtools view -b -f 64 -F 16 ",bamfile," > a.rev2.bam"))
     
-    system(paste0("samtools view -bh -f 83 ",bamfile," > a.rev1.bam"))
-    system(paste0("samtools view -bh -f 163 ",bamfile," > a.rev2.bam"))
-    
+
     # merge the temporary files
     system(paste0("samtools merge -f ",fileOut,"_rev.bam a.rev1.bam a.rev2.bam"))
 
@@ -69,10 +80,12 @@ OKseqHMM <- function(bamfile,chrsizes,fileOut, thresh, winS, hwinS=winS/2, binSi
   else
   {
     print("This bam is single-end.")
+
     print("Seperating the forward strand bam.")
     # Forward strand.
     system(paste0("samtools view -bh -F 20 ",bamfile," > ",fileOut,"_fwd.bam"))
     system(paste0("samtools index ",fileOut,"_fwd.bam"))
+
     print("Seperating the reverse strand bam.")
     # Reverse strand
     system(paste0("samtools view -bh -f 16 ",bamfile," > ",fileOut,"_rev.bam"))
@@ -84,111 +97,111 @@ OKseqHMM <- function(bamfile,chrsizes,fileOut, thresh, winS, hwinS=winS/2, binSi
   chr.sizes <- data.frame(chr=chromNames[,1],size=chromNames[,2])
 
   for (i in c(1:length(chrom))){
-      chr.name <- chrom[i]
-      print(chr.name)
-      chr.length <- chr.sizes[chr.sizes$chr == chr.name,2]
-      print(chr.length)
-      print("Calculating 1kb binsize coverage for forward strand.")
+    chr.name <- chrom[i]
+    print(chr.name)
+    chr.length <- chr.sizes[chr.sizes$chr == chr.name,2]
+    print(chr.length)
+    print("Calculating 1kb binsize coverage for forward strand.")
 
-      system(paste0("samtools view ",fileOut,"_fwd.bam ",chr.name," > fwd_",chr.name,".sam"))
-      system(paste0("awk '$3~/^", chr.name, "$/ {print $2 \"\t\" $4}' fwd_",chr.name,".sam > fwd_",chr.name,".txt"))
-      fileIn <- paste0("fwd_",chr.name,".txt")
-      tmp <- read.table(fileIn, header=F, comment.char="",colClasses=c("integer","integer"),fill=TRUE)
-      tags <- tmp[,2]
-      tags[tags<=0] <- 1
-      breaks <- seq(0, chr.length+binSize, by=binSize)
-      h <- hist(tags, breaks=breaks, plot=FALSE)
-      c <- h$counts
-    
-      print("Calculating 1kb binsize coverage for reverse strand.")
-      system(paste0("samtools view ",fileOut,"_rev.bam ",chr.name," > rev_",chr.name,".sam"))
-      system(paste0("awk '$3~/^", chr.name, "$/ {print $2 \"\t\" $4}' rev_",chr.name,".sam > rev_",chr.name,".txt"))
-      fileIn <- paste0("rev_",chr.name,".txt")
-      tmp <- read.table(fileIn, header=F, comment.char="",colClasses=c("integer","integer"),fill=TRUE)
-      tags <- tmp[,2]
-      tags[tags<=0] <- 1
-      breaks <- seq(0, chr.length+binSize, by=binSize)
-      h <- hist(tags, breaks=breaks, plot=FALSE)
-      w <- h$counts
-      system(paste0("rm *.sam"))
-      system(paste0("rm f*.txt"))
-      system(paste0("rm r*.txt"))
+    system(paste0("samtools view ",fileOut,"_fwd.bam ",chr.name," > fwd_",chr.name,".sam"))
+    system(paste0("awk '$3~/^", chr.name, "$/ {print $2 \"\t\" $4}' fwd_",chr.name,".sam > fwd_",chr.name,".txt"))
+    fileIn <- paste0("fwd_",chr.name,".txt")
+    tmp <- read.table(fileIn, header=F, comment.char="",colClasses=c("integer","integer"),fill=TRUE)
+    tags <- tmp[,2]
+    tags[tags<=0] <- 1
+    breaks <- seq(0, chr.length+binSize, by=binSize)
+    h <- hist(tags, breaks=breaks, plot=FALSE)
+    c <- h$counts
 
-      # raw polarity for later
-      polar <- c/(c+w)
-      polar[c<thresh & w<thresh] <- NA
-    
-      # 1kb RFD:
-      rfd <- (c-w)/(w+c)
-      rfd[is.na(rfd)] <- 0
-      rfd[w<thresh & c<thresh] <- 0
-      rfd[rfd > 1] <- 1
-      rfd[rfd < -1] <- -1
-    
-      start_pos <- as.integer(breaks[1:length(breaks)-1])
-      end_pos <- as.integer(breaks[2 : length(breaks)])
-      chrName <- rep(chr.name,length(rfd))
-      df <-data.frame(chr=chrName,startPos = start_pos,endPos = end_pos,rd_nb=rfd)
-      #restrict the last position is the chr.length, not exceed that.
-      df$endPos[nrow(df)] <- chr.length
-      write.table(df, file = paste0(fileOut,"_RFD_bs",binSize/1000,"kb.bedgraph", sep=""), append = T, quote = FALSE, sep = "\t", col.names=F, row.names=F)
+    print("Calculating 1kb binsize coverage for reverse strand.")
+    system(paste0("samtools view ",fileOut,"_rev.bam ",chr.name," > rev_",chr.name,".sam"))
+    system(paste0("awk '$3~/^", chr.name, "$/ {print $2 \"\t\" $4}' rev_",chr.name,".sam > rev_",chr.name,".txt"))
+    fileIn <- paste0("rev_",chr.name,".txt")
+    tmp <- read.table(fileIn, header=F, comment.char="",colClasses=c("integer","integer"),fill=TRUE)
+    tags <- tmp[,2]
+    tags[tags<=0] <- 1
+    breaks <- seq(0, chr.length+binSize, by=binSize)
+    h <- hist(tags, breaks=breaks, plot=FALSE)
+    w <- h$counts
+    system(paste0("rm *.sam"))
+    system(paste0("rm f*.txt"))
+    system(paste0("rm r*.txt"))
 
-      # smoothing RFD
-      print(paste("Smoothing window size :", winS, "kb"))
-      sw <- cumsum(w)
-      lg <- length(w)
-      from <- (-hwinS+2):(lg-hwinS+1)
-      to <- from+winS-1
-      from[from<1] <- 1
-      to[to>lg] <- lg
+    # raw polarity for later
+    polar <- c/(c+w)
+    polar[c<thresh & w<thresh] <- NA
 
-      print("")
-      print(paste("number of bins :", length(w)))
-      print("")
+    # 1kb RFD:
+    rfd <- (c-w)/(w+c)
+    rfd[is.na(rfd)] <- 0
+    rfd[w<thresh & c<thresh] <- 0
+    rfd[rfd > 1] <- 1
+    rfd[rfd < -1] <- -1
 
-      win <- matrix(c(from, to), ncol=2)
-      ws <- apply(win ,1, function(x) { (sw[x[2]]-sw[x[1]])/winS } )
+    start_pos <- as.integer(breaks[1:length(breaks)-1])
+    end_pos <- as.integer(breaks[2 : length(breaks)])
+    chrName <- rep(chr.name,length(rfd))
+    df <-data.frame(chr=chrName,startPos = start_pos,endPos = end_pos,rd_nb=rfd)
+    #restrict the last position is the chr.length, not exceed that.
+    df$endPos[nrow(df)] <- chr.length
+    write.table(df, file = paste0(fileOut,"_RFD_bs",binSize/1000,"kb.bedgraph", sep=""), append = T, quote = FALSE, sep = "\t", col.names=F, row.names=F)
 
-      sc <- cumsum(c)
-      lg <- length(c)
-      cs <- apply(win ,1, function(x) { (sc[x[2]]-sc[x[1]])/winS } )
+    # smoothing RFD
+    print(paste("Smoothing window size :", winS, "kb"))
+    sw <- cumsum(w)
+    lg <- length(w)
+    from <- (-hwinS+2):(lg-hwinS+1)
+    to <- from+winS-1
+    from[from<1] <- 1
+    to[to>lg] <- lg
 
-   
-      print(paste("cutoff is :",thresh))
-      rfd <- (cs-ws)/(ws+cs)
-      rfd[is.na(rfd)] <- 0
-      rfd[ws<thresh & cs<thresh] <- 0
-      rfd[rfd > 1] <- 1
-      rfd[rfd < -1] <- -1
-    
-      start_pos <- as.integer(breaks[1:length(breaks)-1])
-      end_pos <- as.integer(breaks[2 : length(breaks)])
-      chrName <- rep(chr.name,length(rfd))
-      df <-data.frame(chr=chrName,startPos = start_pos,endPos = end_pos,rd_nb=rfd)
-      #restrict the last position is the chr.length, not exceed that.
-      df$endPos[nrow(df)] <- chr.length
-      write.table(df, file = paste0(fileOut,"_RFD_bs",binSize/1000,"kb_sm_",winS,"kb.bedgraph", sep=""), append = T, quote = FALSE, sep = "\t", col.names=F, row.names=F)
+    print("")
+    print(paste("number of bins :", length(w)))
+    print("")
 
-      # HMM from new deltas =============================
+    win <- matrix(c(from, to), ncol=2)
+    ws <- apply(win ,1, function(x) { (sw[x[2]]-sw[x[1]])/winS } )
 
-      # derive
-      bias <- cs/(ws+cs)
-      bias[is.na(bias)] <- 0.5
-      bias[ws<thresh & cs<thresh] <- 0.5
+    sc <- cumsum(c)
+    lg <- length(c)
+    cs <- apply(win ,1, function(x) { (sc[x[2]]-sc[x[1]])/winS } )
 
-      delta <- c(0,bias[-1]-bias[-length(bias)])
-      delta[is.na(delta)] <- 0.5
 
-      # affect symbols
-      if (is.na(quant[1])) { quant <- quantile(delta, probs = seq(0, 1, 0.20)) }
-      quant[1] <- -1
-      quant[length(quant)] <- 1
+    print(paste("cutoff is :",thresh))
+    rfd <- (cs-ws)/(ws+cs)
+    rfd[is.na(rfd)] <- 0
+    rfd[ws<thresh & cs<thresh] <- 0
+    rfd[rfd > 1] <- 1
+    rfd[rfd < -1] <- -1
 
-      print("quantile borders :")
-      print(quant)
-      print("")
-      dx  <- unlist(sapply(delta, function(x) { ix <- which(x>=quant); ix[length(ix)] }))
-      dx[dx>5] <- 5
+    start_pos <- as.integer(breaks[1:length(breaks)-1])
+    end_pos <- as.integer(breaks[2 : length(breaks)])
+    chrName <- rep(chr.name,length(rfd))
+    df <-data.frame(chr=chrName,startPos = start_pos,endPos = end_pos,rd_nb=rfd)
+    #restrict the last position is the chr.length, not exceed that.
+    df$endPos[nrow(df)] <- chr.length
+    write.table(df, file = paste0(fileOut,"_RFD_bs",binSize/1000,"kb_sm_",winS,"kb.bedgraph", sep=""), append = T, quote = FALSE, sep = "\t", col.names=F, row.names=F)
+
+    # HMM from new deltas =============================
+
+    # derive
+    bias <- cs/(ws+cs)
+    bias[is.na(bias)] <- 0.5
+    bias[ws<thresh & cs<thresh] <- 0.5
+
+    delta <- c(0,bias[-1]-bias[-length(bias)])
+    delta[is.na(delta)] <- 0.5
+
+    # affect symbols
+    if (is.na(quant[1])) { quant <- quantile(delta, probs = seq(0, 1, 0.20)) }
+    quant[1] <- -1
+    quant[length(quant)] <- 1
+
+    print("quantile borders :")
+    print(quant)
+    print("")
+    dx  <- unlist(sapply(delta, function(x) { ix <- which(x>=quant); ix[length(ix)] }))
+    dx[dx>5] <- 5
 
     # write log ==================================
 
@@ -342,17 +355,30 @@ OKseqHMM <- function(bamfile,chrsizes,fileOut, thresh, winS, hwinS=winS/2, binSi
     dataOut_HF <- dataOut[dataOut$state == "H",]
     dataOut_LF <- dataOut[dataOut$state == "L",]
 
+
     write.table(dataOut_U, file = paste(fileOut,"_HMMsegments_IZ.txt", sep=""), append = T,
+                quote = FALSE, sep = "\t", col.names=T, row.names=F)
+    write.table(dataOut_U[,1:3], file = paste(fileOut,"_HMMsegments_IZ.bed", sep=""), append = T,
                 quote = FALSE, sep = "\t", col.names=F, row.names=F)
-    write.table(dataOut_D, file = paste(fileOut,"HMMsegments_TZ.txt", sep=""), append = T,
+
+    write.table(dataOut_D, file = paste(fileOut,"_HMMsegments_TZ.txt", sep=""), append = T,
+                quote = FALSE, sep = "\t", col.names=T, row.names=F)
+    write.table(dataOut_D[,1:3], file = paste(fileOut,"_HMMsegments_TZ.bed", sep=""), append = T,
                 quote = FALSE, sep = "\t", col.names=F, row.names=F)
-    write.table(dataOut_HF, file = paste(fileOut,"HMMsegments_highFlatZone.txt", sep=""), append = T,
+
+    write.table(dataOut_HF, file = paste(fileOut,"_HMMsegments_highFlatZone.txt", sep=""), append = T,
+                quote = FALSE, sep = "\t", col.names=T, row.names=F)
+    write.table(dataOut_HF, file = paste(fileOut,"_HMMsegments_highFlatZone.bed", sep=""), append = T,
                 quote = FALSE, sep = "\t", col.names=F, row.names=F)
-    write.table(dataOut_LF, file = paste(fileOut,"HMMsegments_LowFlatZone.txt", sep=""), append = T,
+
+    write.table(dataOut_LF, file = paste(fileOut,"_HMMsegments_LowFlatZone.txt", sep=""), append = T,
+                quote = FALSE, sep = "\t", col.names=T, row.names=F)
+    write.table(dataOut_LF, file = paste(fileOut,"_HMMsegments_LowFlatZone.bed", sep=""), append = T,
                 quote = FALSE, sep = "\t", col.names=F, row.names=F)
   }
 
 }
+
 
 # end of the function =========================================================================
 
