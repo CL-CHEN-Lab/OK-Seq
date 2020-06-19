@@ -83,12 +83,12 @@ OKseqHMM <- function(bamfile,chrsizes,fileOut, thresh, winS, binSize=1000, hwinS
 
     print("Seperating the forward strand bam.")
     # Forward strand.
-    system(paste0("samtools view -bh -F 20 ",bamfile," > ",fileOut,"_fwd.bam"))
+    system(paste0("samtools view -bh -f 16 ",bamfile," > ",fileOut,"_fwd.bam"))
     system(paste0("samtools index ",fileOut,"_fwd.bam"))
 
     print("Seperating the reverse strand bam.")
     # Reverse strand
-    system(paste0("samtools view -bh -f 16 ",bamfile," > ",fileOut,"_rev.bam"))
+    system(paste0("samtools view -bh -F 16 ",bamfile," > ",fileOut,"_rev.bam"))
     system(paste0("samtools index ",fileOut,"_rev.bam"))
 
   }
