@@ -45,16 +45,18 @@ OKseqHMM <- function(bamfile,chrsizes,fileOut, thresh, winS, binSize=1000, hwinS
     print("Seperating the forward strand bam.")
     # include reads that are 2nd in a pair (128);
     # exclude reads that are mapped to the reverse strand (16)
-    system(paste0("samtools view -b -f 128 -F 16 ",bamfile," > a.fwd1.bam"))
-    
+    # exclude reads that have duplicates (1024)
+    system(paste0("samtools view -b -f 128 -F 1040 ",bamfile," > a.fwd1.bam"))
 
-    # exclude reads that are mapped to the reverse strand (16) and
+
+    # include reads that are mapped to the reverse strand (16) and
     # first in a pair (64): 64 + 16 = 80
-    system(paste0("samtools view -b -f 80 ",bamfile," > a.fwd2.bam"))
-    
+    # exclude duplicates (1024)
+    system(paste0("samtools view -b -f 80 -F 1024 ",bamfile," > a.fwd2.bam"))
+
     # combine the temporary files
-    system(paste0("samtools merge -f ",fileOut,"_fwd.bam a.fwd1.bam a.fwd2.bam"))
-    system(paste0("samtools index ",fileOut,"_fwd.bam"))
+    system(paste0("samtools merge -f ",fileOut,"_fwd_delDupl.bam a.fwd1.bam a.fwd2.bam"))
+    system(paste0("samtools index ",fileOut,"_fwd_delDupl.bam"))
 
     # remove the temporary files
     system(paste0("rm a.fwd*.bam"))
@@ -62,18 +64,20 @@ OKseqHMM <- function(bamfile,chrsizes,fileOut, thresh, winS, binSize=1000, hwinS
     print("Seperating the reverse strand bam.")
     # include reads that map to the reverse strand (128)
     # and are second in a pair (16): 128 + 16 = 144
-    system(paste0("samtools view -b -f 144 ",bamfile," > a.rev1.bam"))
+    # # exclude duplicates (1024)
+    system(paste0("samtools view -b -f 144 -F 1024 ",bamfile," > a.rev1.bam"))
 
     # include reads that are first in a pair (64), but
     # exclude those ones that map to the reverse strand (16)
-    system(paste0("samtools view -b -f 64 -F 16 ",bamfile," > a.rev2.bam"))
-    
+    # # exclude duplicates (1024)
+    system(paste0("samtools view -b -f 64 -F 1040 ",bamfile," > a.rev2.bam"))
+
 
     # merge the temporary files
-    system(paste0("samtools merge -f ",fileOut,"_rev.bam a.rev1.bam a.rev2.bam"))
+    system(paste0("samtools merge -f ",fileOut,"_rev_delDupl.bam a.rev1.bam a.rev2.bam"))
 
     # index the merged, filtered BAM file
-    system(paste0("samtools index ",fileOut,"_rev.bam"))
+    system(paste0("samtools index ",fileOut,"_rev_delDupl.bam"))
     # remove temporary files
     system(paste0("rm a.rev*.bam"))
   }
@@ -83,13 +87,15 @@ OKseqHMM <- function(bamfile,chrsizes,fileOut, thresh, winS, binSize=1000, hwinS
 
     print("Seperating the forward strand bam.")
     # Forward strand.
-    system(paste0("samtools view -bh -f 16 ",bamfile," > ",fileOut,"_fwd.bam"))
-    system(paste0("samtools index ",fileOut,"_fwd.bam"))
+    # # exclude duplicates (1024)
+    system(paste0("samtools view -bh -f 16 -F 1024 ",bamfile," > ",fileOut,"_fwd_delDupl.bam"))
+    system(paste0("samtools index ",fileOut,"_fwd_delDupl.bam"))
 
     print("Seperating the reverse strand bam.")
     # Reverse strand
-    system(paste0("samtools view -bh -F 16 ",bamfile," > ",fileOut,"_rev.bam"))
-    system(paste0("samtools index ",fileOut,"_rev.bam"))
+    # # exclude duplicates (1024)
+    system(paste0("samtools view -bh -F 1040 ",bamfile," > ",fileOut,"_rev_delDupl.bam"))
+    system(paste0("samtools index ",fileOut,"_rev_delDupl.bam"))
 
   }
 
@@ -103,7 +109,7 @@ OKseqHMM <- function(bamfile,chrsizes,fileOut, thresh, winS, binSize=1000, hwinS
     print(chr.length)
     print("Calculating 1kb binsize coverage for forward strand.")
 
-    system(paste0("samtools view ",fileOut,"_fwd.bam ",chr.name," > fwd_",chr.name,".sam"))
+    system(paste0("samtools view ",fileOut,"_fwd_delDupl.bam ",chr.name," > fwd_",chr.name,".sam"))
     system(paste0("awk '$3~/^", chr.name, "$/ {print $2 \"\t\" $4}' fwd_",chr.name,".sam > fwd_",chr.name,".txt"))
     fileIn <- paste0("fwd_",chr.name,".txt")
     tmp <- read.table(fileIn, header=F, comment.char="",colClasses=c("integer","integer"),fill=TRUE)
@@ -114,7 +120,7 @@ OKseqHMM <- function(bamfile,chrsizes,fileOut, thresh, winS, binSize=1000, hwinS
     c <- h$counts
 
     print("Calculating 1kb binsize coverage for reverse strand.")
-    system(paste0("samtools view ",fileOut,"_rev.bam ",chr.name," > rev_",chr.name,".sam"))
+    system(paste0("samtools view ",fileOut,"_rev_delDupl.bam ",chr.name," > rev_",chr.name,".sam"))
     system(paste0("awk '$3~/^", chr.name, "$/ {print $2 \"\t\" $4}' rev_",chr.name,".sam > rev_",chr.name,".txt"))
     fileIn <- paste0("rev_",chr.name,".txt")
     tmp <- read.table(fileIn, header=F, comment.char="",colClasses=c("integer","integer"),fill=TRUE)
@@ -144,7 +150,7 @@ OKseqHMM <- function(bamfile,chrsizes,fileOut, thresh, winS, binSize=1000, hwinS
     df <-data.frame(chr=chrName,startPos = start_pos,endPos = end_pos,rd_nb=rfd)
     #restrict the last position is the chr.length, not exceed that.
     df$endPos[nrow(df)] <- chr.length
-    write.table(df, file = paste0(fileOut,"_RFD_bs",binSize/1000,"kb.bedgraph", sep=""), append = T, quote = FALSE, sep = "\t", col.names=F, row.names=F)
+    write.table(df, file = paste0(fileOut,"_RFD_cutoff",thresh,"_bs",binSize/1000,"kb.bedgraph", sep=""), append = T, quote = FALSE, sep = "\t", col.names=F, row.names=F)
 
     # smoothing RFD
     print(paste("Smoothing window size :", winS, "kb"))
@@ -180,7 +186,7 @@ OKseqHMM <- function(bamfile,chrsizes,fileOut, thresh, winS, binSize=1000, hwinS
     df <-data.frame(chr=chrName,startPos = start_pos,endPos = end_pos,rd_nb=rfd)
     #restrict the last position is the chr.length, not exceed that.
     df$endPos[nrow(df)] <- chr.length
-    write.table(df, file = paste0(fileOut,"_RFD_bs",binSize/1000,"kb_sm_",winS,"kb.bedgraph", sep=""), append = T, quote = FALSE, sep = "\t", col.names=F, row.names=F)
+    write.table(df, file = paste0(fileOut,"_RFD_cutoff",thresh,"_bs",binSize/1000,"kb_sm_",winS,"kb.bedgraph", sep=""), append = T, quote = FALSE, sep = "\t", col.names=F, row.names=F)
 
     # HMM from new deltas =============================
 
