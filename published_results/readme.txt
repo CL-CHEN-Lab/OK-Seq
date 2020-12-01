@@ -1,5 +1,7 @@
 The raw OK-Seq data published in (Petryk, et al. Replication landscape of the human genome. Nature communications 7 (2016): 10208.) have been deposited at NCBI Sequence Read Archive with number SRP065949: https://trace.ncbi.nlm.nih.gov/Traces/sra/?study=SRP065949.
 
+For more OK-seq of different cell lines, the raw data source is available in (Wu X, et al. Developmental and cancer-associated plasticity of DNA replication preferentially targets GC-poor, lowly expressed and late-replicating regions. Nucleic Acids Res. 2018.), which has been deposited at ENA database with accession number PRJEB25180.
+
 And the processing RFD profiles (in bigwig format, 1 kb resolution, human genome version hg19) are available at: http://xfer.curie.fr/get/SbyS2ueTaTz/OKSeq.Data.zip.
 
 You can also downlaod at the current folder the initiaton zones, termination zones and highRFD regions optained by the HMM process.
