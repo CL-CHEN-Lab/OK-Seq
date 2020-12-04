@@ -7,7 +7,7 @@ The profiles of results visualized in IGV is like below:
 
 For more OK-seq of different cell lines, the raw data source is available in (Wu X, et al. Developmental and cancer-associated plasticity of DNA replication preferentially targets GC-poor, lowly expressed and late-replicating regions. Nucleic Acids Res. 2018.), which has been deposited at ENA database with accession number PRJEB25180.
 
-![    Fig.2 1kb binsize RFD profiles for different cell lines and the correspondaing initiation zones (IZs) by OKseqHMM. ](https://github.com/CL-CHEN-Lab/OK-Seq/blob/master/img/igv_snapshot_okseq_Xia_diff_cell_fig2) 
+![    Fig.2 1kb binsize RFD profiles for different cell lines and the correspondaing initiation zones (IZs) by OKseqHMM. ](https://github.com/CL-CHEN-Lab/OK-Seq/blob/master/img/igv_snapshot_okseq_Xia_diff_cell_fig2.png) 
 
 
 And the processing RFD profiles (in bigwig format, 1 kb resolution, human genome version hg19) are available at: http://xfer.curie.fr/get/SbyS2ueTaTz/OKSeq.Data.zip.
