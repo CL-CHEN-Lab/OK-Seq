@@ -45,18 +45,16 @@ OKseqHMM <- function(bamfile,chrsizes,fileOut, thresh, winS, binSize=1000, hwinS
     print("Seperating the forward strand bam.")
     # include reads that are 2nd in a pair (128);
     # exclude reads that are mapped to the reverse strand (16)
-    # exclude reads that have duplicates (1024)
-    system(paste0("samtools view -b -f 128 -F 1040 ",bamfile," > a.fwd1.bam"))
+    system(paste0("samtools view -b -f 128 -F 16 ",bamfile," > a.fwd1.bam"))
 
 
     # include reads that are mapped to the reverse strand (16) and
     # first in a pair (64): 64 + 16 = 80
-    # exclude duplicates (1024)
-    system(paste0("samtools view -b -f 80 -F 1024 ",bamfile," > a.fwd2.bam"))
+    system(paste0("samtools view -b -f 80 ",bamfile," > a.fwd2.bam"))
 
     # combine the temporary files
-    system(paste0("samtools merge -f ",fileOut,"_fwd_delDupl.bam a.fwd1.bam a.fwd2.bam"))
-    system(paste0("samtools index ",fileOut,"_fwd_delDupl.bam"))
+    system(paste0("samtools merge -f ",fileOut,"_fwd.bam a.fwd1.bam a.fwd2.bam"))
+    system(paste0("samtools index ",fileOut,"_fwd.bam"))
 
     # remove the temporary files
     system(paste0("rm a.fwd*.bam"))
@@ -64,20 +62,18 @@ OKseqHMM <- function(bamfile,chrsizes,fileOut, thresh, winS, binSize=1000, hwinS
     print("Seperating the reverse strand bam.")
     # include reads that map to the reverse strand (128)
     # and are second in a pair (16): 128 + 16 = 144
-    # # exclude duplicates (1024)
-    system(paste0("samtools view -b -f 144 -F 1024 ",bamfile," > a.rev1.bam"))
+    system(paste0("samtools view -b -f 144 ",bamfile," > a.rev1.bam"))
 
     # include reads that are first in a pair (64), but
     # exclude those ones that map to the reverse strand (16)
-    # # exclude duplicates (1024)
-    system(paste0("samtools view -b -f 64 -F 1040 ",bamfile," > a.rev2.bam"))
+    system(paste0("samtools view -b -f 64 -F 16 ",bamfile," > a.rev2.bam"))
 
 
     # merge the temporary files
-    system(paste0("samtools merge -f ",fileOut,"_rev_delDupl.bam a.rev1.bam a.rev2.bam"))
+    system(paste0("samtools merge -f ",fileOut,"_rev.bam a.rev1.bam a.rev2.bam"))
 
     # index the merged, filtered BAM file
-    system(paste0("samtools index ",fileOut,"_rev_delDupl.bam"))
+    system(paste0("samtools index ",fileOut,"_rev.bam"))
     # remove temporary files
     system(paste0("rm a.rev*.bam"))
   }
@@ -87,15 +83,13 @@ OKseqHMM <- function(bamfile,chrsizes,fileOut, thresh, winS, binSize=1000, hwinS
 
     print("Seperating the forward strand bam.")
     # Forward strand.
-    # # exclude duplicates (1024)
-    system(paste0("samtools view -bh -f 16 -F 1024 ",bamfile," > ",fileOut,"_fwd_delDupl.bam"))
-    system(paste0("samtools index ",fileOut,"_fwd_delDupl.bam"))
+    system(paste0("samtools view -bh -f 16 ",bamfile," > ",fileOut,"_fwd.bam"))
+    system(paste0("samtools index ",fileOut,"_fwd.bam"))
 
     print("Seperating the reverse strand bam.")
     # Reverse strand
-    # # exclude duplicates (1024)
-    system(paste0("samtools view -bh -F 1040 ",bamfile," > ",fileOut,"_rev_delDupl.bam"))
-    system(paste0("samtools index ",fileOut,"_rev_delDupl.bam"))
+    system(paste0("samtools view -bh -F 16 ",bamfile," > ",fileOut,"_rev.bam"))
+    system(paste0("samtools index ",fileOut,"_rev.bam"))
 
   }
 
