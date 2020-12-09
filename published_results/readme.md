@@ -10,7 +10,7 @@ For more OK-seq of different cell lines (i.e. BL79, IARC385, IB118, IMR90, Raji,
 ![    Fig.2 1kb binsize RFD profiles for different cell lines and the correspondaing initiation zones (IZs) by OKseqHMM. ](https://github.com/CL-CHEN-Lab/OK-Seq/blob/master/img/igv_snapshot_okseq_Xia_diff_cell.png) 
 
 
-Additional processing RFD data (e.g. read counts on W and C strands, biological replicates, etc., in bigwig format, 1 kb resolution, human genome version hg19) are available at: http://xfer.curie.fr/get/SbyS2ueTaTz/OKSeq.Data.zip.
+Additional processing RFD data of HeLa and GM06990 cells (e.g. read counts on W and C strands, biological replicates, etc., in bigwig format, 1 kb resolution, human genome version hg19) are available at: http://xfer.curie.fr/get/SbyS2ueTaTz/OKSeq.Data.zip.
 
 You can also downlaod at the current folder the initiaton zones, termination zones and highRFD regions of corresponding cell types optained by the HMM process.
 
