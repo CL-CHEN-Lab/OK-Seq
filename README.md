@@ -34,7 +34,7 @@ RFD was computed for each 1 kb window as follows:
 
 RFD = (C - W) / (C + W)
 
-where C and W correspond to the number of reads mapped on the Crick and the Watson strand, that reveal, respectively, the proportions of rightward- and leftward- moving forks within each window. Since the total amount of replication on both strands should be constant across the genome, we normalized the difference between two strands by the total read count to account for variation in read depth due to copy number, sequence bias and so on. RFD ranges from -1 (100% leftward moving forks) to +1 (100% rightward moving forks) and 0 means equal proportions of leftward- and rightward-moving forks. Replicate experiments produced RFD profiles that strongly correlated to each other (for HeLa cells, R=0.92 (Pearson), P<10^15 (t-test) and for GM06990 cells, R=0.93, P<10^15). Similar correlations were observed between RFD profiles with EdU or EdC labelling.
+where C and W correspond to the number of reads mapped on the Crick and the Watson strand, that reveal, respectively, the proportions of rightward- and leftward- moving forks within each window. Since the total amount of replication on both strands should be constant across the genome, we normalized the difference between two strands by the total read count to account for variation in read depth due to copy number, sequence bias and so on. RFD ranges from -1 (100% leftward moving forks) to +1 (100% rightward moving forks) and 0 means equal proportions of leftward- and rightward-moving forks. Replicate experiments produced RFD profiles that strongly correlated to each other (for HeLa cells, R=0.92 (Pearson), P<10^-15 (t-test) and for GM06990 cells, R=0.93, P<10^-15). Similar correlations were observed between RFD profiles with EdU or EdC labelling.
 
 Segmentation of RFD profiles:
 
@@ -110,4 +110,4 @@ And the OK-Seq data and results from our previous publications are available at 
 
 Petryk N., Kahli M., d'Aubenton-Carafa Y., Jaszczsyzyn Y., Shen Y., Sylvain M., Thermes C., CHEN C.L.#, and Hyrien O.# (#co-last authors). Replication landscape of the human genome. ***Nat. Commun.*** 7:10208 (2016). https://doi.org/10.1038/ncomms10208
 
-Promonet A.\*, Padioleau I.\*, Liu Y.\* (\*co-first authors), Sanz L., Schmitz A., Skrzypczak M., Sarrazin A., Ginalski K., Chedin F., Rowicka  M., Chen C.L.#, Lin Y.L.# and Pasero P.# (#co-last authors). Topoisomerase 1 prevents R-loop mediated replication stress at transcription termination sites. ***Nat. Commun.*** 11:3940 (2020) https://doi.org/10.1038/s41467-020-17858-2
+Promonet A.\*, Padioleau I.\*, LIU Y.\* (\*co-first authors), Sanz L., Schmitz A., Skrzypczak M., Sarrazin A., Ginalski K., Chedin F., Rowicka  M., CHEN C.L.#, Lin Y.L.# and Pasero P.# (#co-last authors). Topoisomerase 1 prevents R-loop mediated replication stress at transcription termination sites. ***Nat. Commun.*** 11:3940 (2020) https://doi.org/10.1038/s41467-020-17858-2
