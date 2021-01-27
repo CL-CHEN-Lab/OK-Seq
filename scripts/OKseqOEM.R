@@ -1,0 +1,100 @@
+OKseqOEM <- function(bamInF, bamInR, chrsizes, fileOut, binList=c(10,20,50,100,250,500,1000))
+{
+
+    chromNames <-  read.table(chrsizes,header=FALSE,sep="\t",comment.char = "#",stringsAsFactors = FALSE)
+    chr.sizes <- data.frame(chr=chromNames[,1],size=chromNames[,2])
+
+    for (i in c(1:nrow(chr.sizes))){
+      chr.name <- chr.sizes$chr[i]
+      print(chr.name)
+      chr.length <- chr.sizes$size[i]
+      print(chr.length)
+      print("Calculating 1kb binsize coverage for forward strand.")
+      system(paste0("samtools view -q 1 -f 0x42 -F 0x4 ",bamInF," ",chr.name," > fwd_",chr.name,".sam"))
+      system(paste0("awk '$3~/^", chr.name, "$/ {print $2 \"\t\" $4}' fwd_",chr.name,".sam > fwd_",chr.name,".txt"))
+      fileIn <- paste0("fwd_",chr.name,".txt")
+      tmp <- read.table(fileIn, header=F, comment.char="",colClasses=c("integer","integer"),fill=TRUE)
+      tags <- tmp[,2]
+      tags[tags<3] <- 0
+      breaks <- seq(0, chr.length+1000, by=1000)
+      h <- hist(tags, breaks=breaks, plot=FALSE)
+      Temp.chr.F <- h$counts
+      #write.table(Temp.chr.F,"2021test_chr21_fwd.txt", quote = FALSE, sep = "\t", col.names=F, row.names=F)
+
+
+      print("Calculating 1kb binsize coverage for reverse strand.")
+      system(paste0("samtools view -q 1 -f 0x42 -F 0x4 ",bamInR," ",chr.name," > rev_",chr.name,".sam"))
+      system(paste0("awk '$3~/^", chr.name, "$/ {print $2 \"\t\" $4}' rev_",chr.name,".sam > rev_",chr.name,".txt"))
+      fileIn <- paste0("rev_",chr.name,".txt")
+      tmp <- read.table(fileIn, header=F, comment.char="",colClasses=c("integer","integer"),fill=TRUE)
+      tags <- tmp[,2]
+      tags[tags<3] <- 0
+      breaks <- seq(0, chr.length+1000, by=1000)
+      h <- hist(tags, breaks=breaks, plot=FALSE)
+      Temp.chr.R <- h$counts
+      #write.table(Temp.chr.R,"2021test_chr21_rev.txt", quote = FALSE, sep = "\t", col.names=F, row.names=F)
+
+      system(paste0("rm *.sam"))
+      system(paste0("rm f*.txt"))
+      system(paste0("rm r*.txt"))
+
+      Temp.chr.F <- cumsum(Temp.chr.F)
+      Temp.chr.R <- cumsum(Temp.chr.R)
+
+      print("Calculating OEM.")
+      for (n in c(1:length(binList)))
+        {
+
+        print(paste0("The window size for OEM is ",binList[n],"kb."))
+
+        Data.chr.F <- Temp.chr.F[(binList[n]+1):length(Temp.chr.F)]-Temp.chr.F[1:(length(Temp.chr.F)-binList[n])]
+        Data.chr.R <- Temp.chr.R[(binList[n]+1):length(Temp.chr.R)]-Temp.chr.R[1:(length(Temp.chr.R)-binList[n])]
+
+        Data.chr.Smooth <- Data.chr.F/(Data.chr.F+Data.chr.R)
+        Data.chr <- Data.chr.Smooth[(binList[n]+1):length(Data.chr.Smooth)]-Data.chr.Smooth[1:(length(Data.chr.Smooth)-binList[n])]
+
+        Data.chr <- c(rep(NA,binList[n]-1),Data.chr)
+        Data.chr[which(is.na(Data.chr))] <- 0
+        # Data.chr<- Data.chr[1:chr.length]
+
+        ##Save file in wig format
+        if (i==1) {
+          Title <- paste("fixedStep chrom=", chr.name, " start=1 step=1000 span=1000",sep="")
+          fileOutWig <- paste0(fileOut,"_OEM_",binList[n],"kb.wig")
+          write.table(Data.chr, file=fileOutWig, quote = FALSE, row.names = FALSE, col.names=Title, append = FALSE)
+        } else {
+
+          Title <- paste("fixedStep chrom=", chr.name, " start=1 step=1000 span=1000",sep="")
+          fileOutWig <- paste0(fileOut,"_OEM_",binList[n],"kb.wig")
+          write.table(Data.chr, file=fileOutWig, quote = FALSE, row.names = FALSE, col.names=Title, append = TRUE)
+
+        }
+    }
+  }
+}
+
+OKseqOEM(bamInF = "~/Documents/2020-10-30-OKseq/results/20201204_Hela_may2019_S3_all_cutadapt_sort_delDupl_merge_hmm_fwd.bam",
+         bamInR = "~/Documents/2020-10-30-OKseq/results/20201204_Hela_may2019_S3_all_cutadapt_sort_delDupl_merge_hmm_rev.bam",
+         chrsizes = "~/Documents/2020-10-30-OKseq/results/hg19.chr.size.txt",
+         fileOut ="~/Documents/2020-10-30-OKseq/results/20210119_Hela_may2019_S3_all_cutadapt_sort_delDupl_merge")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
