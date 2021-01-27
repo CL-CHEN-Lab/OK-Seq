@@ -8,7 +8,12 @@ BioManager::install("S4Vectors")
 
 OKseqHMM(bamfile = "template_chr21_22.bam", thresh=10, chrsizes = "hg19.chr.size.txt",winS=15, fileOut = "hmm")
 
+# Run script OKseqOEM.R
 
+OKseqOEM(bamInF = "hela_s3_fwd.bam",
+         bamInR = "hela_s3_rev.bam",
+         chrsizes = "hg19.chr.size.txt",
+         fileOut ="hela_OEM")
 
 
 

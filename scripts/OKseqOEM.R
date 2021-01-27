@@ -73,13 +73,6 @@ OKseqOEM <- function(bamInF, bamInR, chrsizes, fileOut, binList=c(10,20,50,100,2
   }
 }
 
-OKseqOEM(bamInF = "~/Documents/2020-10-30-OKseq/results/20201204_Hela_may2019_S3_all_cutadapt_sort_delDupl_merge_hmm_fwd.bam",
-         bamInR = "~/Documents/2020-10-30-OKseq/results/20201204_Hela_may2019_S3_all_cutadapt_sort_delDupl_merge_hmm_rev.bam",
-         chrsizes = "~/Documents/2020-10-30-OKseq/results/hg19.chr.size.txt",
-         fileOut ="~/Documents/2020-10-30-OKseq/results/20210119_Hela_may2019_S3_all_cutadapt_sort_delDupl_merge")
-
-
-
 
 
 
