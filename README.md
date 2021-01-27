@@ -123,6 +123,7 @@ You will obtain a serie of wiggle files normalised within different window sizes
 
 ![    Fig.5 OEM profiles for HeLa. ](https://github.com/CL-CHEN-Lab/OK-Seq/blob/master/img/fig5.png) 
 
+In the genomic viewer, you can set different colors (here, positive values in pink and negative values in blue) to see the RFD transitions and the pink enrichment bulks are perfectly matched with our peak calling results. And obviously, the origins initiation loci are logically enriched on the smaller scales (20kb-100kb) with a faster expanding fashion while termination loci expand much larger (100kb-1MB) in a much slower way.
 
 ## Reference:
 
