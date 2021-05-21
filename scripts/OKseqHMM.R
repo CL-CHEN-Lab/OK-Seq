@@ -101,7 +101,7 @@ OKseqHMM <- function(bamfile,chrsizes,fileOut, thresh, winS, binSize=1000, hwinS
     print(chr.name)
     chr.length <- chr.sizes[chr.sizes$chr == chr.name,2]
     print(chr.length)
-    print("Calculating 1kb binsize coverage for forward strand.")
+    print(paste0("Calculating ",binSize/1000,"kb binsize coverage for forward strand."))
 
     system(paste0("samtools view ",fileOut,"_fwd.bam ",chr.name," > fwd_",chr.name,".sam"))
     system(paste0("awk '$3~/^", chr.name, "$/ {print $2 \"\t\" $4}' fwd_",chr.name,".sam > fwd_",chr.name,".txt"))
@@ -113,7 +113,7 @@ OKseqHMM <- function(bamfile,chrsizes,fileOut, thresh, winS, binSize=1000, hwinS
     h <- hist(tags, breaks=breaks, plot=FALSE)
     c <- h$counts
 
-    print("Calculating 1kb binsize coverage for reverse strand.")
+    print(paste0("Calculating ",binSize/1000,"kb binsize coverage for reverse strand."))
     system(paste0("samtools view ",fileOut,"_rev.bam ",chr.name," > rev_",chr.name,".sam"))
     system(paste0("awk '$3~/^", chr.name, "$/ {print $2 \"\t\" $4}' rev_",chr.name,".sam > rev_",chr.name,".txt"))
     fileIn <- paste0("rev_",chr.name,".txt")
