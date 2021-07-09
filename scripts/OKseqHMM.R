@@ -368,12 +368,12 @@ OKseqHMM <- function(bamfile,chrsizes,fileOut, thresh, winS, binSize=1000, hwinS
 
     write.table(dataOut_HF, file = paste(fileOut,"_HMMsegments_highFlatZone.txt", sep=""), append = T,
                 quote = FALSE, sep = "\t", col.names=T, row.names=F)
-    write.table(dataOut_HF, file = paste(fileOut,"_HMMsegments_highFlatZone.bed", sep=""), append = T,
+    write.table(dataOut_HF[,1:3], file = paste(fileOut,"_HMMsegments_highFlatZone.bed", sep=""), append = T,
                 quote = FALSE, sep = "\t", col.names=F, row.names=F)
 
     write.table(dataOut_LF, file = paste(fileOut,"_HMMsegments_LowFlatZone.txt", sep=""), append = T,
                 quote = FALSE, sep = "\t", col.names=T, row.names=F)
-    write.table(dataOut_LF, file = paste(fileOut,"_HMMsegments_LowFlatZone.bed", sep=""), append = T,
+    write.table(dataOut_LF[,1:3], file = paste(fileOut,"_HMMsegments_LowFlatZone.bed", sep=""), append = T,
                 quote = FALSE, sep = "\t", col.names=F, row.names=F)
   }
 
