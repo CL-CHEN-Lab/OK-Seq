@@ -10,7 +10,7 @@
 #     Initialize HMM 4 states, observations, start probability, emission probability, transition probability
 #============================================================================================================
 
-OKseqHMM <- function(bamfile,chrsizes,fileOut, thresh, winS, binSize=1000, hwinS=winS/2,
+OKseqHMM <- function(bamfile,chrsizes,fileOut, thresh, winS, binSize, hwinS=winS/2,
                      st=c("D", "L", "H", "U"),
                      sym=c("V", "W", "X", "Y", "Z"),
                      pstart=rep(1/4, 4),
