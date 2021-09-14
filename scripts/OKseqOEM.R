@@ -1,4 +1,4 @@
-OKseqOEM <- function(bamInF, bamInR, chrsizes, fileOut,binsize, binList)
+OKseqOEM <- function(bamInF, bamInR, chrsizes, fileOut, binsize, binList)
 {
 
   chromNames <-  read.table(chrsizes,header=FALSE,sep="\t",comment.char = "#",stringsAsFactors = FALSE)
