@@ -69,12 +69,12 @@ OKseqOEM <- function(bamInF, bamInR, chrsizes, fileOut, binsize, binList)
 
       ##Save file in wig format
       if (i==1) {
-        Title <- paste0("fixedStep chrom=", chr.name, " start=1 step=",binsize," span=",binList[n], sep="")
+        Title <- paste0("fixedStep chrom=", chr.name, " start=1 step=",binsize," span=",binsize, sep="")
         fileOutWig <- paste0(fileOut,"_OEM_",binList[n]*binsize/1000,"kb.wig")
         write.table(Data.chr, file=fileOutWig, quote = FALSE, row.names = FALSE, col.names=Title, append = FALSE)
       } else {
 
-        Title <- paste0("fixedStep chrom=", chr.name, " start=1 step=",binsize," span=",binList[n], sep="")
+        Title <- paste0("fixedStep chrom=", chr.name, " start=1 step=",binsize," span=",binsize, sep="")
         fileOutWig <- paste0(fileOut,"_OEM_",binList[n]*binsize/1000,"kb.wig")
         write.table(Data.chr, file=fileOutWig, quote = FALSE, row.names = FALSE, col.names=Title, append = TRUE)
 
