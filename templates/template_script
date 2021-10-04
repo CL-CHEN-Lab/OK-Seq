@@ -4,11 +4,11 @@ BioManager::install("HMM")
 BioManager::install("GenomicAlignments")
 BioManager::install("S4Vectors")
 
-# Run script OKseqHMM.R
+# Run script either in terminal with command line as source(PATH/OKseqHMM.R) or read in the function OKseqHMM into Rstudio then execute the function as show below:
 
 OKseqHMM(bamfile = "template_chr21_22.bam", thresh=10, chrsizes = "hg19.chr.size.txt",winS=15, fileOut = "hmm",binSize=1000)
 
-# Run script OKseqOEM.R
+# Run script either in terminal with command line as source(PATH/OKseqOEM.R) or read in the function OKseqOEM into Rstudio then execute the function as show below:
 
 OKseqOEM(bamInF = "hela_s3_fwd.bam",
          bamInR = "hela_s3_rev.bam",
