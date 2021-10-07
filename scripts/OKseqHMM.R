@@ -276,7 +276,7 @@ OKseqHMM <- function(bamfile,chrsizes,fileOut, thresh, winS, binSize, hwinS=winS
     # for the table, adding states and calculating lengths, slopes and associated probabilities ====================
     # calculate the slope of the polarity of the states (between the left and right part of the state))
 
-    states <- meanPol <- ymax <- ymin <- cpp <- p <- inc <- napc <- corr <- rep(NA, length(from))
+    states <- meanPol <- ymax <- ymin <- p <- inc <- napc <- corr <- rep(NA, length(from))
     states <- seg[from]
 
     for (i in 1:length(from))
@@ -288,7 +288,6 @@ OKseqHMM <- function(bamfile,chrsizes,fileOut, thresh, winS, binSize, hwinS=winS
       if (length(m)>0)
       {
         p[i] <- mean(m, na.rm=T)
-        cpp[i] <- 1-(sum((1-m), na.rm=T)/((1-min(m, na.rm=T))*length(m)))
       }
       meanPol[i] <- mean(polar[pos], na.rm=T)
 
@@ -317,7 +316,6 @@ OKseqHMM <- function(bamfile,chrsizes,fileOut, thresh, winS, binSize, hwinS=winS
     # for display ==================================
 
     inc1 <- round(inc*10^8)		# as a percentage of RFD per megabase
-    cpp <- round(100*cpp)
     p <- round(p*100)
     chr <- rep(chr.name,length(from))
     from1 <- (from-1)*binSize+1
@@ -348,7 +346,7 @@ OKseqHMM <- function(bamfile,chrsizes,fileOut, thresh, winS, binSize, hwinS=winS
 
     # writing =============================
     dataOut <- data.frame(chr, from=as.integer(from1), to=as.integer(to1), state=states, length=lg1, slope=inc1,
-                          p, fcp=cpp, pol_mean=meanPol1, pol_left=ymin1, pol_right=ymax1,
+                          p, pol_mean=meanPol1, pol_left=ymin1, pol_right=ymax1,
                           na=napc, cor=corr1, slope_adj=slope_adj, pol_adj_left=polL, pol_adj_right=polR)
     dataOut_U <- dataOut[dataOut$state == "U",]
     dataOut_D <- dataOut[dataOut$state == "D",]
