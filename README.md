@@ -140,3 +140,5 @@ Please make sure that you already installed the deepTools (https://deeptools.rea
 Petryk N., Kahli M., d'Aubenton-Carafa Y., Jaszczsyzyn Y., Shen Y., Sylvain M., Thermes C., CHEN C.L.#, and Hyrien O.# (#co-last authors). Replication landscape of the human genome. ***Nat. Commun.*** 7:10208 (2016). https://doi.org/10.1038/ncomms10208
 
 Promonet A.\*, Padioleau I.\*, LIU Y.\* (\*co-first authors), Sanz L., Schmitz A., Skrzypczak M., Sarrazin A., Ginalski K., Chedin F., Rowicka  M., CHEN C.L.#, Lin Y.L.# and Pasero P.# (#co-last authors). Topoisomerase 1 prevents R-loop mediated replication stress at transcription termination sites. ***Nat. Commun.*** 11:3940 (2020) https://doi.org/10.1038/s41467-020-17858-2
+
+Liu, Y., Wu, X., D'Aubenton-Carafa, Y., Thermes, C. & Chen, C.-L. OKseqHMM: a genome-wide replication fork directionality analysis toolkit. ***bioRxiv*** (2022) doi:10.1101/2022.01.12.476022.
