@@ -131,9 +131,9 @@ You will obtain a serie of wiggle files calculated by using different sliding wi
 
 In the genomic viewer, you can set different colors (here, positive values in pink and negative values in blue) to see the RFD transitions and the pink enrichment bulks are perfectly matched with our peak calling results. It should be noted that the replication initiation zones show a highest positive transition at the small scales (most at 10kb-100kb) with a faster expanding fashion, while the termination zones expand larger (100kb-1MB) regions in a much slower manner of delta RFD transition.
 
-## Average profile and heatmap usage: 
+## Module AveragePlot for the metaplot of average profile/heatmap: 
 
-Please make sure that you already installed the deepTools (https://deeptools.readthedocs.io/en/develop/index.html) and the python environment (the recommanded version is python 3.6.4 or less. The latest python version could cause some incompatible issue with deepTools.) The shell-based script "average_profile_heatmap.sh" show us the template about how to use the deepTools to generate the average profile and heatmap among the annotated genes or the regions of interest by using the computeMatrix and plotProfile/plotHeatmap function, defining the two upstream and downstream border size and intragenic body size and also the other parameters indicated in the script.
+Please make sure that you already installed the deepTools (https://deeptools.readthedocs.io/en/develop/index.html) and the python environment (the recommanded version is python 3.6.4. The latest python version could cause some incompatible issue with deepTools.) The shell-based script "average_profile_heatmap.sh" show us the template about how to use the deepTools to generate the average profile and heatmap among the annotated genes or the regions of interest by using the computeMatrix and plotProfile/plotHeatmap function, defining the two upstream and downstream border size and intragenic body size and also the other parameters indicated in the script.
 
 ## Reference:
 
