@@ -56,9 +56,6 @@ OKseqHMM <- function(bamfile,chrsizes,fileOut, thresh, winS, binSize, hwinS=winS
     system(paste0("samtools merge -f ",fileOut,"_fwd.bam a.fwd1.bam a.fwd2.bam"))
     system(paste0("samtools index ",fileOut,"_fwd.bam"))
 
-    # remove the temporary files
-    system(paste0("rm a.fwd*.bam"))
-
     print("Seperating the reverse strand bam.")
     # include reads that map to the reverse strand (128)
     # and are second in a pair (16): 128 + 16 = 144
@@ -74,8 +71,7 @@ OKseqHMM <- function(bamfile,chrsizes,fileOut, thresh, winS, binSize, hwinS=winS
 
     # index the merged, filtered BAM file
     system(paste0("samtools index ",fileOut,"_rev.bam"))
-    # remove temporary files
-    system(paste0("rm a.rev*.bam"))
+
   }
   else
   {
@@ -123,9 +119,6 @@ OKseqHMM <- function(bamfile,chrsizes,fileOut, thresh, winS, binSize, hwinS=winS
     breaks <- seq(0, chr.length+binSize, by=binSize)
     h <- hist(tags, breaks=breaks, plot=FALSE)
     w <- h$counts
-    system(paste0("rm *.sam"))
-    system(paste0("rm f*.txt"))
-    system(paste0("rm r*.txt"))
 
     # raw polarity for later
     polar <- c/(c+w)
