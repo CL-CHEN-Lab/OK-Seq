@@ -1,3 +1,6 @@
+#force R to use regular numbers instead of using the e+10- (exponential)like notation
+options(scipen = 999)
+
 OKseqOEM <- function(bamInF, bamInR, chrsizes, fileOut, binSize, binList)
 {
 
@@ -28,26 +31,30 @@ OKseqOEM <- function(bamInF, bamInR, chrsizes, fileOut, binSize, binList)
       system(paste0("samtools view ",bamInR," ",chr.name," > rev_",chr.name,".sam"))
       system(paste0("awk '$3~/^", chr.name, "$/ {print $2 \"\t\" $4}' rev_",chr.name,".sam > rev_",chr.name,".txt"))
     }
-    fileIn <- paste0("fwd_",chr.name,".txt")
-    tmp<- read.table(fileIn, header=F, comment.char="",colClasses=c("integer","integer"),fill=TRUE)
+
+    fileInF <- paste0("fwd_",chr.name,".txt")
+    tmp<- read.table(fileInF, header=F, comment.char="",colClasses=c("integer","integer"),fill=TRUE)
     tags <- tmp[,2]
     tags[tags<3] <- 0
     breaks <- seq(0, chr.length+binSize, by=binSize)
     h <- hist(tags, breaks=breaks, plot=FALSE)
     Temp.chr.F <- h$counts
-    fileIn <- paste0("rev_",chr.name,".txt")
-    tmp <- read.table(fileIn, header=F, comment.char="",colClasses=c("integer","integer"),fill=TRUE)
+
+    fileInR <- paste0("rev_",chr.name,".txt")
+    tmp <- read.table(fileInR, header=F, comment.char="",colClasses=c("integer","integer"),fill=TRUE)
     tags <- tmp[,2]
     tags[tags<3] <- 0
     breaks <- seq(0, chr.length+binSize, by=binSize)
     h <- hist(tags, breaks=breaks, plot=FALSE)
     Temp.chr.R <- h$counts
 
+    # delete intermediate files. If keep them, mask these 4 lines with #
+    system(paste0("rm fwd_",chr.name,".sam"))
+    system(paste0("rm rev_",chr.name,".sam"))
+    system(paste0("rm ",fileInF))
+    system(paste0("rm ",fileInR))
 
-    system(paste0("rm *.sam"))
-    system(paste0("rm f*.txt"))
-    system(paste0("rm r*.txt"))
-
+    #get the cumulative sum
     Temp.chr.F <- cumsum(Temp.chr.F)
     Temp.chr.R <- cumsum(Temp.chr.R)
 

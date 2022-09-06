@@ -5,7 +5,8 @@
 #' @export
 #' @examples
 #' OKseqHMM()
-
+#force R to use regular numbers instead of using the e+10- (exponential)like notation
+options(scipen = 999)
 
 #     Initialize HMM 4 states, observations, start probability, emission probability, transition probability
 #============================================================================================================
@@ -101,8 +102,8 @@ OKseqHMM <- function(bamfile,chrsizes,fileOut, thresh, winS, binSize, hwinS=winS
 
     system(paste0("samtools view ",fileOut,"_fwd.bam ",chr.name," > fwd_",chr.name,".sam"))
     system(paste0("awk '$3~/^", chr.name, "$/ {print $2 \"\t\" $4}' fwd_",chr.name,".sam > fwd_",chr.name,".txt"))
-    fileIn <- paste0("fwd_",chr.name,".txt")
-    tmp <- read.table(fileIn, header=F, comment.char="",colClasses=c("integer","integer"),fill=TRUE)
+    fileInF <- paste0("fwd_",chr.name,".txt")
+    tmp <- read.table(fileInF, header=F, comment.char="",colClasses=c("integer","integer"),fill=TRUE)
     tags <- tmp[,2]
     tags[tags<=0] <- 1
     breaks <- seq(0, chr.length+binSize, by=binSize)
@@ -112,13 +113,19 @@ OKseqHMM <- function(bamfile,chrsizes,fileOut, thresh, winS, binSize, hwinS=winS
     print(paste0("Calculating ",binSize/1000,"kb binsize coverage for reverse strand."))
     system(paste0("samtools view ",fileOut,"_rev.bam ",chr.name," > rev_",chr.name,".sam"))
     system(paste0("awk '$3~/^", chr.name, "$/ {print $2 \"\t\" $4}' rev_",chr.name,".sam > rev_",chr.name,".txt"))
-    fileIn <- paste0("rev_",chr.name,".txt")
-    tmp <- read.table(fileIn, header=F, comment.char="",colClasses=c("integer","integer"),fill=TRUE)
+    fileInR <- paste0("rev_",chr.name,".txt")
+    tmp <- read.table(fileInR, header=F, comment.char="",colClasses=c("integer","integer"),fill=TRUE)
     tags <- tmp[,2]
     tags[tags<=0] <- 1
     breaks <- seq(0, chr.length+binSize, by=binSize)
     h <- hist(tags, breaks=breaks, plot=FALSE)
     w <- h$counts
+
+    # delete intermediate files. If keep them, mask these 4 lines with #
+    system(paste0("rm fwd_",chr.name,".sam"))
+    system(paste0("rm rev_",chr.name,".sam"))
+    system(paste0("rm ",fileInF))
+    system(paste0("rm ",fileInR))
 
     # raw polarity for later
     polar <- c/(c+w)
@@ -233,7 +240,7 @@ OKseqHMM <- function(bamfile,chrsizes,fileOut, thresh, winS, binSize, hwinS=winS
     print("wait, viterbi...")
     seg <- viterbi(hmm=hmm1, observation=dx)
 
-    # pour affichage du profil des etats
+    # for showing the states profiles
     prof <- rep(NA, times=length(seg))
     prof[seg=="U"] <- 1
     prof[seg=="H"] <- 0.2
