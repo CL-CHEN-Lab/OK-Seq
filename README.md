@@ -1,6 +1,6 @@
 # OKseqHMM: a R package for profiling OK-Seq data to study the genome-wide DNA Replication Fork Directionality (RFD)
 
-
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7056979.svg)](https://doi.org/10.5281/zenodo.7056979)
 
 Package: OKseqHMM
 
@@ -10,7 +10,7 @@ Depends: R (>= 3.1.0)
 
 deepTools (https://deeptools.readthedocs.io/en/develop/content/installation.html)
 
-Python (latest version is NOT recommended due to the incompatibility with deepTools.)
+Python 3
 
 Imports: HMM, Rsamtools, GenomicAlignments
 
