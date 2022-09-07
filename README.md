@@ -2,17 +2,15 @@
 
 
 
-[![DOI](https://zenodo.org/badge/533359340.svg)](https://zenodo.org/badge/latestdoi/533359340)
-
 Package: OKseqHMM
 
-Version: v1.0.0
+Version: v1.0.1
 
 Depends: R (>= 3.1.0)
 
 deepTools (https://deeptools.readthedocs.io/en/develop/content/installation.html)
 
-Python (<= 3.6.4, latest version is NOT recommended due to the incompatibility with deepTools.)
+Python (latest version is NOT recommended due to the incompatibility with deepTools.)
 
 Imports: HMM, Rsamtools, GenomicAlignments
 
