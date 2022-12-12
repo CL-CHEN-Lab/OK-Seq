@@ -11,7 +11,7 @@ options(scipen = 999)
 #     Initialize HMM 4 states, observations, start probability, emission probability, transition probability
 #============================================================================================================
 
-OKseqHMM <- function(bamfile,chrsizes,fileOut, thresh, winS, binSize, hwinS=winS/2,
+OKseqHMM <- function(bamfile,chrsizes,fileOut, thresh, winS, binSize,mappedReads=TRUE, pairedReads=FALSE, properPair=FALSE,hwinS=winS/2,
                      st=c("D", "L", "H", "U"),
                      sym=c("V", "W", "X", "Y", "Z"),
                      pstart=rep(1/4, 4),
@@ -36,90 +36,186 @@ OKseqHMM <- function(bamfile,chrsizes,fileOut, thresh, winS, binSize, hwinS=winS
   readBAM<- readGAlignments(bamfile)
   chrom <- as.character(na.omit(unique(seqnames(readBAM))))
   print(chrom)
-  paired <- testPairedEndBam(bamfile)
-  # test if the BAM file is pair-end or not
-
-  if (paired)
-  {
-    #Generate forward and reverse strand bam files:
-    print("This bam is pair-end.")
-    print("Seperating the forward strand bam.")
-    # include reads that are 2nd in a pair (128);
-    # exclude reads that are mapped to the reverse strand (16)
-    system(paste0("samtools view -b -f 128 -F 16 ",bamfile," > a.fwd1.bam"))
-
-
-    # include reads that are mapped to the reverse strand (16) and
-    # first in a pair (64): 64 + 16 = 80
-    system(paste0("samtools view -b -f 80 ",bamfile," > a.fwd2.bam"))
-
-    # combine the temporary files
-    system(paste0("samtools merge -f ",fileOut,"_fwd.bam a.fwd1.bam a.fwd2.bam"))
-    system(paste0("samtools index ",fileOut,"_fwd.bam"))
-
-    print("Seperating the reverse strand bam.")
-    # include reads that map to the reverse strand (128)
-    # and are second in a pair (16): 128 + 16 = 144
-    system(paste0("samtools view -b -f 144 ",bamfile," > a.rev1.bam"))
-
-    # include reads that are first in a pair (64), but
-    # exclude those ones that map to the reverse strand (16)
-    system(paste0("samtools view -b -f 64 -F 16 ",bamfile," > a.rev2.bam"))
-
-
-    # merge the temporary files
-    system(paste0("samtools merge -f ",fileOut,"_rev.bam a.rev1.bam a.rev2.bam"))
-
-    # index the merged, filtered BAM file
-    system(paste0("samtools index ",fileOut,"_rev.bam"))
-
-  }
-  else
-  {
-    print("This bam is single-end.")
-
-    print("Seperating the forward strand bam.")
-    # Forward strand.
-    system(paste0("samtools view -bh -f 16 ",bamfile," > ",fileOut,"_fwd.bam"))
-    system(paste0("samtools index ",fileOut,"_fwd.bam"))
-
-    print("Seperating the reverse strand bam.")
-    # Reverse strand
-    system(paste0("samtools view -bh -F 16 ",bamfile," > ",fileOut,"_rev.bam"))
-    system(paste0("samtools index ",fileOut,"_rev.bam"))
-
-  }
-
-  chromNames <-  read.table(chrsizes,header=FALSE,sep="\t",comment.char = "#",stringsAsFactors = FALSE)
+  chromNames <-  read.table(chrsizes,header=F,sep="\t",comment.char = "#",stringsAsFactors = FALSE)
   chr.sizes <- data.frame(chr=chromNames[,1],size=chromNames[,2])
 
-  for (i in c(1:length(chrom))){
-    chr.name <- chrom[i]
-    print(chr.name)
-    chr.length <- chr.sizes[chr.sizes$chr == chr.name,2]
-    print(chr.length)
-    print(paste0("Calculating ",binSize/1000,"kb binsize coverage for forward strand."))
+  if( TRUE %in% is.na(match(chrom,chr.sizes$chr))){
+    print(paste("the chromosome coordinates are different between the input bam file and your reference annotation, you may consider to keep uniform the chromosome names in your chr.size file as ",chrom[1]," for exemple."))
+  }else {
+    # test if the BAM file is pair-end or not
+    paired <- testPairedEndBam(bamfile)
+    if (paired)
+    {
+      #Generate forward and reverse strand bam files:
+      print("This bam is pair-end.")
+      print("Seperating the forward strand bam.")
 
-    system(paste0("samtools view ",fileOut,"_fwd.bam ",chr.name," > fwd_",chr.name,".sam"))
-    system(paste0("awk '$3~/^", chr.name, "$/ {print $2 \"\t\" $4}' fwd_",chr.name,".sam > fwd_",chr.name,".txt"))
-    fileInF <- paste0("fwd_",chr.name,".txt")
-    tmp <- read.table(fileInF, header=F, comment.char="",colClasses=c("integer","integer"),fill=TRUE)
-    tags <- tmp[,2]
-    tags[tags<=0] <- 1
-    breaks <- seq(0, chr.length+binSize, by=binSize)
-    h <- hist(tags, breaks=breaks, plot=FALSE)
-    c <- h$counts
+      system(paste0("samtools view -b -f 128 -F 16 -@ 4 ",bamfile," > a.fwd1.bam"))
+      system(paste0("samtools view -b -f 80 -@ 4 ",bamfile," > a.fwd2.bam"))
+      # combine the temporary files
+      system(paste0("samtools merge -f ",fileOut,"_fwd.bam a.fwd1.bam a.fwd2.bam"))
+      system(paste0("samtools index ",fileOut,"_fwd.bam"))
+      # remove the temporary files
+      system(paste0("rm a.fwd*.bam"))
 
-    print(paste0("Calculating ",binSize/1000,"kb binsize coverage for reverse strand."))
-    system(paste0("samtools view ",fileOut,"_rev.bam ",chr.name," > rev_",chr.name,".sam"))
-    system(paste0("awk '$3~/^", chr.name, "$/ {print $2 \"\t\" $4}' rev_",chr.name,".sam > rev_",chr.name,".txt"))
-    fileInR <- paste0("rev_",chr.name,".txt")
-    tmp <- read.table(fileInR, header=F, comment.char="",colClasses=c("integer","integer"),fill=TRUE)
-    tags <- tmp[,2]
-    tags[tags<=0] <- 1
-    breaks <- seq(0, chr.length+binSize, by=binSize)
-    h <- hist(tags, breaks=breaks, plot=FALSE)
-    w <- h$counts
+      print("Seperating the reverse strand bam.")
+      system(paste0("samtools view -b -f 144 -@ 4 ",bamfile," > a.rev1.bam"))
+      system(paste0("samtools view -b -f 64 -F 16 -@ 4 ",bamfile," > a.rev2.bam"))
+      # merge the temporary files
+      system(paste0("samtools merge -f ",fileOut,"_rev.bam a.rev1.bam a.rev2.bam"))
+      system(paste0("samtools index ",fileOut,"_rev.bam"))
+      # remove temporary files
+      system(paste0("rm a.rev*.bam"))
+    }
+    else
+    {
+      print("This bam is single-end.")
+
+      print("Seperating the forward strand bam.")
+      # Forward strand.
+      system(paste0("samtools view -bh -f 16 -@ 4 ",bamfile," > ",fileOut,"_fwd.bam"))
+      #system(paste0("samtools view -c -bh -F 20 ",bamfile," > ",fileOut,"_fwd.bam"))
+      system(paste0("samtools index ",fileOut,"_fwd.bam"))
+
+      print("Seperating the reverse strand bam.")
+      # Reverse strand
+      system(paste0("samtools view -bh -F 16 -@ 4 ",bamfile," > ",fileOut,"_rev.bam"))
+      #system(paste0("samtools view -c -bh -f 16 ",bamfile," > ",fileOut,"_rev.bam"))
+      system(paste0("samtools index ",fileOut,"_rev.bam"))
+
+    }
+
+    for (i in c(1:length(chrom))){
+      chr.name <- chrom[i]
+      print(chr.name)
+      chr.length <- chr.sizes[chr.sizes$chr == chr.name,2]
+      print(chr.length)
+      if (chr.length > winS*binSize*100){
+
+        print(paste0("Calculating ",binSize/1000,"kb binsize coverage for forward strand."))
+        if (paired)
+        {
+          if (mappedReads == TRUE & pairedReads == FALSE & properPair == FALSE)
+          {
+            print(paste0("You choose to use the mapped-reads option for the bam files"))
+            system(paste0("samtools view -q 1 -F 4 ",fileOut,"_fwd.bam ",chr.name," > fwd_",chr.name,".sam"))
+            system(paste0("awk '$3~/^", chr.name, "$/ {print $2 \"\t\" $4}' fwd_",chr.name,".sam > fwd_",chr.name,".txt"))
+            fileInF <- paste0("fwd_",chr.name,".txt")
+            tmp <- read.table(fileInF, header=F, comment.char="",colClasses=c("integer","integer"),fill=TRUE)
+            tags <- tmp[,2]
+            tags[tags<=0] <- 1
+            breaks <- seq(0, chr.length+binSize, by=binSize)
+            h <- hist(tags, breaks=breaks, plot=FALSE)
+            c <- h$counts
+
+            print(paste0("Calculating ",binSize/1000,"kb binsize coverage for reverse strand."))
+            system(paste0("samtools view -q 1 -F 4 ",fileOut,"_rev.bam ",chr.name," > rev_",chr.name,".sam"))
+            system(paste0("awk '$3~/^", chr.name, "$/ {print $2 \"\t\" $4}' rev_",chr.name,".sam > rev_",chr.name,".txt"))
+            fileInR <- paste0("rev_",chr.name,".txt")
+            tmp <- read.table(fileInR, header=F, comment.char="",colClasses=c("integer","integer"),fill=TRUE)
+            tags <- tmp[,2]
+            tags[tags<=0] <- 1
+            breaks <- seq(0, chr.length+binSize, by=binSize)
+            h <- hist(tags, breaks=breaks, plot=FALSE)
+            w <- h$counts
+
+          }
+          else if (mappedReads == TRUE & pairedReads == TRUE & properPair == FALSE)
+          {
+            print(paste0("You choose to use the paired-mapped reads option for the bam files"))
+            system(paste0("samtools view -q 1 -f 1 -F 4 ",fileOut,"_fwd.bam ",chr.name," > fwd_",chr.name,".sam"))
+            system(paste0("awk '$3~/^", chr.name, "$/ {print $2 \"\t\" $4}' fwd_",chr.name,".sam > fwd_",chr.name,".txt"))
+            fileInF <- paste0("fwd_",chr.name,".txt")
+            tmp <- read.table(fileInF, header=F, comment.char="",colClasses=c("integer","integer"),fill=TRUE)
+            tags <- tmp[,2]
+            tags[tags<=0] <- 1
+            breaks <- seq(0, chr.length+binSize, by=binSize)
+            h <- hist(tags, breaks=breaks, plot=FALSE)
+            c <- h$counts
+
+            print(paste0("Calculating ",binSize/1000,"kb binsize coverage for reverse strand."))
+            system(paste0("samtools view -q 1 -f 1 -F 4 ",fileOut,"_rev.bam ",chr.name," > rev_",chr.name,".sam"))
+            system(paste0("awk '$3~/^", chr.name, "$/ {print $2 \"\t\" $4}' rev_",chr.name,".sam > rev_",chr.name,".txt"))
+            fileInR <- paste0("rev_",chr.name,".txt")
+            tmp <- read.table(fileInR, header=F, comment.char="",colClasses=c("integer","integer"),fill=TRUE)
+            tags <- tmp[,2]
+            tags[tags<=0] <- 1
+            breaks <- seq(0, chr.length+binSize, by=binSize)
+            h <- hist(tags, breaks=breaks, plot=FALSE)
+            w <- h$counts
+          }
+          else if (mappedReads == TRUE & properPair == TRUE)
+          {
+            print(paste0("You choose to use the proper pair option for the bam files"))
+            system(paste0("samtools view -q 1 -f 3 -F 4 ",fileOut,"_fwd.bam ",chr.name," > fwd_",chr.name,".sam"))
+            system(paste0("awk '$3~/^", chr.name, "$/ {print $2 \"\t\" $4}' fwd_",chr.name,".sam > fwd_",chr.name,".txt"))
+            fileInF <- paste0("fwd_",chr.name,".txt")
+            tmp <- read.table(fileInF, header=F, comment.char="",colClasses=c("integer","integer"),fill=TRUE)
+            tags <- tmp[,2]
+            tags[tags<=0] <- 1
+            breaks <- seq(0, chr.length+binSize, by=binSize)
+            h <- hist(tags, breaks=breaks, plot=FALSE)
+            c <- h$counts
+
+            print(paste0("Calculating ",binSize/1000,"kb binsize coverage for reverse strand."))
+            system(paste0("samtools view -q 1 -f 3 -F 4 ",fileOut,"_rev.bam ",chr.name," > rev_",chr.name,".sam"))
+            system(paste0("awk '$3~/^", chr.name, "$/ {print $2 \"\t\" $4}' rev_",chr.name,".sam > rev_",chr.name,".txt"))
+            fileInR <- paste0("rev_",chr.name,".txt")
+            tmp <- read.table(fileInR, header=F, comment.char="",colClasses=c("integer","integer"),fill=TRUE)
+            tags <- tmp[,2]
+            tags[tags<=0] <- 1
+            breaks <- seq(0, chr.length+binSize, by=binSize)
+            h <- hist(tags, breaks=breaks, plot=FALSE)
+            w <- h$counts
+          }
+          else if (mappedReads == FALSE & pairedReads == FALSE & properPair == FALSE)
+          {
+            print(paste0("Bam files will be proceeded by default."))
+            system(paste0("samtools view -q 1 ",fileOut,"_fwd.bam ",chr.name," > fwd_",chr.name,".sam"))
+            system(paste0("awk '$3~/^", chr.name, "$/ {print $2 \"\t\" $4}' fwd_",chr.name,".sam > fwd_",chr.name,".txt"))
+            fileInF <- paste0("fwd_",chr.name,".txt")
+            tmp <- read.table(fileInF, header=F, comment.char="",colClasses=c("integer","integer"),fill=TRUE)
+            tags <- tmp[,2]
+            tags[tags<=0] <- 1
+            breaks <- seq(0, chr.length+binSize, by=binSize)
+            h <- hist(tags, breaks=breaks, plot=FALSE)
+            c <- h$counts
+
+            print(paste0("Calculating ",binSize/1000,"kb binsize coverage for reverse strand."))
+            system(paste0("samtools view -q 1 ",fileOut,"_rev.bam ",chr.name," > rev_",chr.name,".sam"))
+            system(paste0("awk '$3~/^", chr.name, "$/ {print $2 \"\t\" $4}' rev_",chr.name,".sam > rev_",chr.name,".txt"))
+            fileInR <- paste0("rev_",chr.name,".txt")
+            tmp <- read.table(fileInR, header=F, comment.char="",colClasses=c("integer","integer"),fill=TRUE)
+            tags <- tmp[,2]
+            tags[tags<=0] <- 1
+            breaks <- seq(0, chr.length+binSize, by=binSize)
+            h <- hist(tags, breaks=breaks, plot=FALSE)
+            w <- h$counts
+          }
+        }
+        else {
+          print(paste0("sigle-end bam file will be proceeded by default."))
+          system(paste0("samtools view -q 1 ",fileOut,"_fwd.bam ",chr.name," > fwd_",chr.name,".sam"))
+          system(paste0("awk '$3~/^", chr.name, "$/ {print $2 \"\t\" $4}' fwd_",chr.name,".sam > fwd_",chr.name,".txt"))
+          fileInF <- paste0("fwd_",chr.name,".txt")
+          tmp <- read.table(fileInF, header=F, comment.char="",colClasses=c("integer","integer"),fill=TRUE)
+          tags <- tmp[,2]
+          tags[tags<=0] <- 1
+          breaks <- seq(0, chr.length+binSize, by=binSize)
+          h <- hist(tags, breaks=breaks, plot=FALSE)
+          c <- h$counts
+
+          print(paste0("Calculating ",binSize/1000,"kb binsize coverage for reverse strand."))
+          system(paste0("samtools view -q 1 ",fileOut,"_rev.bam ",chr.name," > rev_",chr.name,".sam"))
+          system(paste0("awk '$3~/^", chr.name, "$/ {print $2 \"\t\" $4}' rev_",chr.name,".sam > rev_",chr.name,".txt"))
+          fileInR <- paste0("rev_",chr.name,".txt")
+          tmp <- read.table(fileInR, header=F, comment.char="",colClasses=c("integer","integer"),fill=TRUE)
+          tags <- tmp[,2]
+          tags[tags<=0] <- 1
+          breaks <- seq(0, chr.length+binSize, by=binSize)
+          h <- hist(tags, breaks=breaks, plot=FALSE)
+          w <- h$counts
+        }
 
     # delete intermediate files. If keep them, mask these 4 lines with #
     system(paste0("rm fwd_",chr.name,".sam"))
@@ -373,8 +469,13 @@ OKseqHMM <- function(bamfile,chrsizes,fileOut, thresh, winS, binSize, hwinS=winS
                 quote = FALSE, sep = "\t", col.names=T, row.names=F)
     write.table(dataOut_LF[,1:3], file = paste(fileOut,"_HMMsegments_LowFlatZone.bed", sep=""), append = T,
                 quote = FALSE, sep = "\t", col.names=F, row.names=F)
+      }
+      else
+      {
+        i= i+1
+      }
+    }
   }
-
 }
 
 
