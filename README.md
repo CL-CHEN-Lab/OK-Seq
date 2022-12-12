@@ -1,10 +1,12 @@
 # OKseqHMM: a R package for profiling OK-Seq data to study the genome-wide DNA Replication Fork Directionality (RFD)
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7056979.svg)](https://doi.org/10.5281/zenodo.7056979)
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7428883.svg)](https://doi.org/10.5281/zenodo.7428883)
+
 
 Package: OKseqHMM
 
-Version: v1.0.1
+Version: v2.0.0
 
 Depends: R (>= 3.1.0)
 
