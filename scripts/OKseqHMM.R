@@ -5,6 +5,8 @@
 #' @export
 #' @examples
 #' OKseqHMM()
+#' author : Yaqun LIU
+#' version 2.0.0
 #force R to use regular numbers instead of using the e+10- (exponential)like notation
 options(scipen = 999)
 

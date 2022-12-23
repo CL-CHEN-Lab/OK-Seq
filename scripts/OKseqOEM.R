@@ -1,4 +1,11 @@
-#force R to use regular numbers instead of using the e+10- (exponential)like notation
+#' OKseqOEM backage
+#'
+#' This function allows you to generate the OEM wiggle files within different genomic scales
+#' @keywords OK-Seq, OEM, RFD transition and efficiency
+#' OKseqOEM()
+#' author : Yaqun LIU
+#' version 2.0.0
+#' #force R to use regular numbers instead of using the e+10- (exponential)like notation
 options(scipen = 999)
 
 OKseqOEM <- function(bamInF, bamInR, chrsizes, fileOut, binSize, binList)
