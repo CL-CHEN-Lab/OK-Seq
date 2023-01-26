@@ -26,7 +26,7 @@ RoxygenNote: 7.0.2
 
 Original designer: Yves d'AUBENTON-CARAFA (CNRS, I2BC, C.Thermes's team)
 
-Contributors and Maintainers: [Chun-Long CHEN](mailto:chunlong.chen@curie.fr) (Institut Curie), [Yaqun LIU](mailto:yaqun.liu@curie.fr) (Institut Curie)
+Contributors and Maintainers: [Chun-Long CHEN](mailto:chunlong.chen@curie.fr) (Institut Curie), [Yaqun LIU](mailto:liu.yaqun19@gmail.com)
 
 ## Abstract: 
 
@@ -145,4 +145,6 @@ Petryk N., Kahli M., d'Aubenton-Carafa Y., Jaszczsyzyn Y., Shen Y., Sylvain M., 
 
 Promonet A.\*, Padioleau I.\*, LIU Y.\* (\*co-first authors), Sanz L., Schmitz A., Skrzypczak M., Sarrazin A., Ginalski K., Chedin F., Rowicka  M., CHEN C.L.#, Lin Y.L.# and Pasero P.# (#co-last authors). Topoisomerase 1 prevents R-loop mediated replication stress at transcription termination sites. ***Nat. Commun.*** 11:3940 (2020) https://doi.org/10.1038/s41467-020-17858-2
 
-Liu, Y., Wu, X., D'Aubenton-Carafa, Y., Thermes, C. & Chen, C.-L. OKseqHMM: a genome-wide replication fork directionality analysis toolkit. ***bioRxiv*** (2022) doi:10.1101/2022.01.12.476022.
+Liu, Y., Wu, X., D'Aubenton-Carafa, Y., Thermes, C. & Chen, C.-L. OKseqHMM: a genome-wide replication fork directionality analysis toolkit. ***Nucleic Acids Research*** (2023) https://doi.org/10.1093/nar/gkac1239
+
+Wu, X., Liu, Y., d’Aubenton-Carafa, Y. et al. Genome-wide measurement of DNA replication fork directionality and quantification of DNA replication initiation and termination with Okazaki fragment sequencing. ***Nat. Protoc.*** (2023). https://doi.org/10.1038/s41596-022-00793-5
